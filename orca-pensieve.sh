@@ -1,21 +1,26 @@
-if [ $# -eq 2 ]
+if [ $# -eq 3 ]
 then
     source setup.sh
 
     first_time=$1
     port_base=$2
+    argdl=$3
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
     eval_duration=30
     num_actors=1
     memory_size=$((max_steps*num_actors))
-    dir="${cur_dir}/rl-module"
-    orca_binary="orca-server-mahimahi"
+    dir="${cur_dir}/orca_pensieve"
+    echo "[$0]: dir is: $dir"
+    #exit
+    orca_binary="orca-server-mahimahi-http"
+    echo "[$0]: orca_binary is: $orca_binary"
+    
 
     sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
     sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
-    sudo killall -s9 python client orca-server-mahimahi
+    sudo killall -s9 python orca-server-mahimahi-http
 
     epoch=20
     act_port=$port_base
@@ -26,12 +31,15 @@ then
        num_actors=1
        sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
 
-       echo "./learner.sh  $dir $first_time  &"
+       echo "[$0]: ./learner.sh  $dir $first_time  &"
        ./learner.sh  $dir ${first_time} &
+       sleep 15
+       echo "bringing up actors"
        #Bring up the actors:
        act_id=0
-       for dl in 48
+       for dl in $argdl
        do
+           echo "[$0]: dl = $dl"
            downl="wired$dl"
            upl="wired48"
            for del in 10
@@ -39,7 +47,7 @@ then
                bdp=$((2*dl*del/12))     #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
                for qs in $((2*bdp))
                do
-                   ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary & 
+                   ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
                    pids="$pids $!"
                    act_id=$((act_id+1))
                    act_port=$((port_base+act_id))
@@ -49,21 +57,23 @@ then
        done
         for pid in $pids
         do
-            echo "waiting for $pid"
+            echo "[$0]: waiting for $pid"
             wait $pid
         done
         #Bring down the learner and actors ...
+        echo "sleeping for 315 seconds before killing actors and learner"
+        #sleep 315
+        echo "killing actors and learner"
         for i in `seq 0 $((num_actors))`
         do
             sudo killall -s15 python
-            sudo killall -s15 orca-server-mahimahi
-            sudo killall -s15 client
+            sudo killall -s15 orca-server-mahimahi-http
         done
     else
     # If you are here: You are going to start/continue learning a better model!
 
       #Bring up the learner:
-      echo "./learner.sh  $dir $first_time &"
+      echo "[$0]: ./learner.sh  $dir $first_time &"
       if [ $1 -eq 1 ];
       then
           # Start the learning from the scratch
@@ -74,12 +84,13 @@ then
            /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} --load &
            lpid=$!
        fi
-       sleep 10
+       sleep 20
+       echo "calling actors"
 
        #Bring up the actors:
        # Here, we go with single actor
        act_id=0
-       for dl in 48
+       for dl in $argdl
        do
            downl="wired$dl"
            upl=$downl
@@ -88,18 +99,20 @@ then
                bdp=$((2*dl*del/12))      #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
                for qs in $((2*bdp))
                do
+                    echo "[$0]: ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary"
                    ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary
                    pids="$pids $!"
+                   echo "[$0]: initialised actor with pid: $!"
                    act_id=$((act_id+1))
                    act_port=$((port_base+act_id))
-                   sleep 2
+                   sleep 5
                done
            done
        done
 
        for pid in $pids
        do
-           echo "waiting for $pid"
+           echo "[$0]:  waiting for $pid"
            wait $pid
        done
 
@@ -113,7 +126,7 @@ then
         for i in `seq 0 $((num_actors))`
        do
            sudo killall -s15 python
-           sudo killall -s15 orca-server-mahimahi
+           sudo killall -s15 orca-server-mahimahi-http
        done
     fi
 else

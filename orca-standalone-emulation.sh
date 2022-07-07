@@ -29,20 +29,25 @@ then
     #one-way delay=10ms
     del=10
     bdp=$((2*dl*del/12))     #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
-    qs=$((2*bdp))
+    qs=$((2*bdp))            
 
+    orca_binary="orca-server-mahimahi"
     # For the Step-scenraio, you can use follwoing parameters:
     #downl="step-10s-3-level"
     #qs=1000
     #eval_duration=60
-
-    ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 &
+    echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &"
+    ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
     pids="$pids $!"
 
     #in case you need more actors: increase number actor's id and port. and run actor.sh again ...
-    #act_id=$((act_id+1))
-    #act_port=$((port_base+act_id))
-    #sleep 2
+    act_id=$((act_id+1))
+    act_port=$((port_base+act_id))
+    sleep 2
+
+    echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &"
+    ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
+    pids="$pids $!"
 
     #Wait for them ...
     for pid in $pids

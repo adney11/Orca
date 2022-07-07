@@ -28,6 +28,8 @@
 #include <cstdlib>
 #include <sys/select.h>
 #include "define.h"
+
+#include "http_helpers.h"
 //#define CHANGE_TARGET 1
 #define MAX_CWND 10000
 #define MIN_CWND 4
@@ -134,6 +136,7 @@ void start_server(int flow_num, int client_port)
             close(sock[i]);
             return;
         }
+        DBGPRINT(0, 0, "server bind: successful\n");
         if (scheme) 
         {
             if (setsockopt(sock[i], IPPROTO_TCP, TCP_CONGESTION, scheme, strlen(scheme)) < 0) 
@@ -156,7 +159,7 @@ void start_server(int flow_num, int client_port)
     
     sprintf(final_cmd,"%s",cmd);
 
-    DBGPRINT(DBGSERVER,0,"%s\n",final_cmd);
+    DBGPRINT(DBGSERVER,0,"final_cmd: %s\n",final_cmd);
     info->trace=trace;
     info->num_lines=num_lines;
     /**
@@ -189,16 +192,16 @@ void start_server(int flow_num, int client_port)
         return;
     } 
     if (first_time==1){
-        sprintf(cmd,"/home/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
         DBGPRINT(0,0,"Starting RL Module (Without load) ...\n%s",cmd);
     }
     else if (first_time==2 || first_time==4){
-        sprintf(cmd,"/home/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
         DBGPRINT(0,0,"Starting RL Module (No learning) ...\n%s",cmd);
     }
     else
     {
-        sprintf(cmd,"/home/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
         DBGPRINT(0,0,"Starting RL Module (With load) ...\n%s",cmd);
     }
  
@@ -570,6 +573,7 @@ void* CntThread(void* information)
 }
 void* DataThread(void* info)
 {
+    // NOTE(ADNEY): edit this to behave like an HTTP server
     /*
 	struct sched_param param;
     param.__sched_priority=sched_get_priority_max(SCHED_RR);
@@ -586,6 +590,8 @@ void* DataThread(void* info)
         DBGERROR("Cannot get priority for the Data thread: %s\n",strerror(errno));
     }*/
     //pthread_t send_msg_thread;
+
+    // manage flow id for local flow state
 
 	cFlow* flow = (cFlow*)info;
 	int sock_local = flow->flowinfo.sock;

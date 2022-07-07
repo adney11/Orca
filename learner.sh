@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 if [ $# != 2 ]
 then
@@ -10,13 +10,14 @@ fi
 
 path=$1
 first_time=$2
-##Bring up the learner:
+##
+echo "Bring up the learner:"
 if [ $first_time -eq 1 ];
 then
-    /home/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path &
+    /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path &
 elif [ $first_time -eq 4 ]
 then
-    /home/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load --eval &
+    /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load --eval &
 else
-    /home/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load &
+    /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load &
 fi
