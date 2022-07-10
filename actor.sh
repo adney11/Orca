@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 if [ $# != 13 ]
 then
     echo -e "usage:$0 port period first_time [underlying scheme:cubic , vegas , westwood , illinois , bbr, yeah , veno, scal , htcp , cdg , hybla ,... ] [path to ddpg.py] [actor id] [downlink] [uplink] [one-way link delay] [time time] [Qsize] [Max iterations per run]"

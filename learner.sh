@@ -17,6 +17,7 @@ then
     /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path &
 elif [ $first_time -eq 4 ]
 then
+    echo "bringing up learner for evaluation"
     /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load --eval &
 else
     /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load &

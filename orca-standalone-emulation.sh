@@ -24,12 +24,12 @@ then
 
     #Use a wired48 link for both down & up links (you just need to change the downlink side, if you need.)
     dl=48
-    downl="wired$dl"
+    downl="25_5mbps"       #"wired$dl"
     upl="wired48"
     #one-way delay=10ms
     del=10
     bdp=$((2*dl*del/12))     #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
-    qs=$((2*bdp))            
+    qs=100 #$((2*bdp))            
 
     orca_binary="orca-server-mahimahi"
     # For the Step-scenraio, you can use follwoing parameters:
@@ -45,9 +45,9 @@ then
     act_port=$((port_base+act_id))
     sleep 2
 
-    echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &"
-    ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
-    pids="$pids $!"
+    #echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &"
+    #./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
+    #pids="$pids $!"
 
     #Wait for them ...
     for pid in $pids

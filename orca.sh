@@ -15,7 +15,7 @@ then
 
     sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
     sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
-    sudo killall -s9 python client orca-server-mahimahi
+    sudo killall -s9 python3 client orca-server-mahimahi
 
     epoch=20
     act_port=$port_base
