@@ -1,0 +1,22 @@
+{
+    "0":{
+        "trace_name": "6mbps-w-offline",
+        "traces": ["normal_6mbps-w-offline_real_0", "normal_6mbps-w-offline_real_1", "normal_6mbps-w-offline_real_2", "normal_6mbps-w-offline_real_3"]
+    },
+    "1":{
+        "trace_name": "25_5mbps",
+        "traces": ["normal_25_5mbps_real_0", "normal_25_5mbps_real_1", "normal_25_5mbps_real_2", "normal_25_5mbps_real_3"]
+    },
+    "2":{
+        "trace_name": "12_24mbps",
+        "traces": ["normal_12_24mbps_real_0", "normal_12_24mbps_real_1", "normal_12_24mbps_real_2", "normal_12_24mbps_real_3"]
+    },
+    "3":{
+        "trace_name": "24mbps_3level",
+        "traces": ["normal_24mbps_3level_real_0", "normal_24mbps_3level_real_1", "normal_24mbps_3level_real_2", "normal_24mbps_3level_real_0"]
+    },
+    "4":{
+        "trace_name": "unstable_trace0",
+        "traces": ["normal_unstable_trace0_real_0", "normal_unstable_trace0_real_1", "normal_unstable_trace0_real_2", "normal_unstable_trace0_real_0"]
+    }
+}
