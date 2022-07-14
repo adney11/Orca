@@ -43,6 +43,7 @@ def configure_logging(path_to_log_directory):
     return logger
 
 logger = configure_logging("./rl_logging")
+state_action_logger = configure_logging('./state_action')
 
 
 

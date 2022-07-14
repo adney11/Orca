@@ -20,26 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import threading
 import logging
 import tensorflow as tf
 import sys
 from agent import Agent
-
-
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import gym
 import numpy as np
+np.set_printoptions(threshold=sys.maxsize)
 import time
 import random
 import datetime
 import sysv_ipc
 import signal
 import pickle
-from utils import logger, Params
+from utils import logger, Params, state_action_logger
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
+
 
 
 def create_input_op_shape(obs, tensor):
@@ -163,6 +163,9 @@ def main():
     global params
     config = parser.parse_args()
 
+    logfilename=f"{config.job_name}{config.task}"
+    logging.basicConfig(filename=f'logs/{logfilename}-d5_py.log', level=logging.DEBUG)
+    LOG = logging.getLogger(__name__)
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))
 
@@ -244,6 +247,7 @@ def main():
         if not os.path.exists(tfeventdir):
             os.makedirs(tfeventdir)
         summary_writer = tf.summary.FileWriterCache.get(tfeventdir)
+        LOG.debug("tfeventdir/summary location: {tfeventdir}")
 
         with tf.device(shared_job_device):
 
@@ -308,17 +312,21 @@ def main():
             params.dict['ckptdir'] = tfeventdir
 
         tfconfig = tf.ConfigProto(allow_soft_placement=True)
+        # saving hooks
+
 
         if params.dict['single_actor_eval']:
             mon_sess = tf.train.SingularMonitoredSession(
                 checkpoint_dir=params.dict['ckptdir'])
         else:
+            scaffold = tf.train.Scaffold(saver=tf.train.Saver(keep_checkpoint_every_n_hours=0.5))
             mon_sess = tf.train.MonitoredTrainingSession(master=server.target,
                     save_checkpoint_secs=15,
                     save_summaries_secs=None,
                     save_summaries_steps=None,
                     is_chief=is_learner,
                     checkpoint_dir=params.dict['ckptdir'],
+                    scaffold=scaffold,
                     config=tfconfig,
                     hooks=None)
 
@@ -396,6 +404,8 @@ def main():
 
                     step_counter += 1
                     s1, r, terminal, error_code = env.step(a,eval_=config.eval)
+                    # LOG action and new state TODO(ADNEY)
+                    state_action_logger.debug(f"epoch: {epoch}\naction: {a}\ngave state: {s1}\nwhere samples/cwnd is at index 3")
 
                     if error_code == True:
                         s1_rec_buffer = np.concatenate( (s0_rec_buffer[params.dict['state_dim']:], s1) )
