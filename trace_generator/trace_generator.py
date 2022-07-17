@@ -31,35 +31,37 @@ class Trace_Generator():
     def _get_new_thr(self, prev_thr, change_type):
         #print(f"change_type: {change_type}")
         if change_type == 'random-big':
-            change = random.uniform(10, 15)
+            change = random.uniform(3, 5)
             sign = random.randint(0, 10)
             return self._clamp(prev_thr + math.pow(-1, sign) * change)
         elif change_type == 'random-small':
-            change = random.uniform(1, 3)
+            change = random.uniform(0, 2)
             sign = random.randint(0, 10)
             return self._clamp(prev_thr + math.pow(-1, sign) * change)
         elif change_type == 'random-increase-small':
-            change = random.uniform(2, 5)
+            change = random.uniform(0, 2)
             return self._clamp(prev_thr + change)
         elif change_type == 'random-increase-big':
-            change = random.uniform(10, 15)
+            change = random.uniform(3, 5)
             #print(f"change to be added: {change}")
             val = self._clamp(prev_thr + change)
             #print(f'val: {val}')
             return val    
         elif change_type == 'random-decrease-small':
-            change = random.uniform(0, 5)            
+            change = random.uniform(0, 2)            
             val = self._clamp(prev_thr - change)
             return val
         elif change_type == 'random-decrease-big':
-            change = random.uniform(10, 15)
+            change = random.uniform(3, 5)
             return self._clamp(prev_thr - change)
         else:
-            change_type = change_type.split()
+            change_type = change_type.split('-')
             if change_type[0] == 'increase':
                 return self._clamp(prev_thr + float(change_type[1]))
             elif change_type[0] == 'decrease':
                 return self._clamp(prev_thr - float(change_type[1]))
+            elif change_type[0] == "set":
+                return self._clamp(float(change_type[1]))
 
 
 
@@ -217,6 +219,7 @@ if __name__ == "__main__":
     ax.plot(time_sec, thr_sec)
     ax.set(xlabel="time (sec)", ylabel='link capacity (Mbps)', title=trace_name)
     ax.tick_params(axis='x',direction='out')
+    ax.set_ylim([0, 7])
     ax.grid()
     fig.savefig(f"{trace_name}-sec.png")
     #plt.show()
