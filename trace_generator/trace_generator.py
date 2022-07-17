@@ -46,8 +46,7 @@ class Trace_Generator():
             #print(f"change to be added: {change}")
             val = self._clamp(prev_thr + change)
             #print(f'val: {val}')
-            return val
-            
+            return val    
         elif change_type == 'random-decrease-small':
             change = random.uniform(0, 5)            
             val = self._clamp(prev_thr - change)
@@ -63,6 +62,7 @@ class Trace_Generator():
                 return self._clamp(prev_thr - float(change_type[1]))
 
 
+
     def generate_trace(self, start_thr, duration, change_times, change_type, jitter, variants = 1, trace_name = None, end_thr = None):
         """
         starts at `start_thr` generates gaussian noise with jitter range 
@@ -71,7 +71,7 @@ class Trace_Generator():
         all_time_ms = []
         all_thr = []
         for variant in range(variants):
-            #print(f"generate_trace called with args: start_thr:{start_thr} duration={duration} change_times={change_times} change_type={change_type} jitter={jitter} trace_name={trace_name} end_thr={end_thr}")
+            print(f"generate_trace called with args: start_thr:{start_thr} duration={duration} change_times={change_times} change_type={change_type} jitter={jitter} trace_name={trace_name} end_thr={end_thr}")
             if jitter > self.padding:
                 jitter = 1.5
             time_ms = []
@@ -80,7 +80,7 @@ class Trace_Generator():
             #sys.exit()
             # split duration to ms
             prev_thr = start_thr
-            curr_thr = start_thr + random.uniform(-0.2, 0.2)
+            curr_thr = start_thr + random.uniform(-jitter, jitter)
             #print(f"start_thr = {start_thr}")
             for s in range(duration):
                 if s == duration - 1 and end_thr is not None:
@@ -102,7 +102,7 @@ class Trace_Generator():
                         thr.append(curr_thr)
                     time_ms.append(s * MS_IN_S + ms)
                 prev_thr = curr_thr
-                self.printProgress(s, duration+1, f'{trace_name}{variant}')
+                self.printProgress(s, duration+1, f"{trace_name}{variant}")
             print()
 
             if trace_name is not None:
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     max_thr = float(sys.argv[7])
     trace_name = sys.argv[8]
     variants = int(sys.argv[9])
-    gen = Trace_Generator(min_thr, max_thr, jitter_freq=100)
+    gen = Trace_Generator(min_thr, max_thr, padding=1, jitter_freq=100)
     
     time_ms_all, thr_all = gen.generate_trace(start_thr, duration, change_times, change_type, jitter, variants, trace_name)
     for i in range(len(time_ms_all)):
