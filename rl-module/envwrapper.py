@@ -30,6 +30,10 @@ import sysv_ipc
 import signal
 import sys
 from time import sleep
+import time
+import logging
+logging.basicConfig(filename='./rl_module_envwrapper.log', level=logging.DEBUG)
+myLOG = logging.getLogger(__name__)
 
 class Env_Wrapper(object):
     def __init__(self, name):
@@ -234,7 +238,10 @@ class TCP_Env_Wrapper(object):
             mss=s0[13]
             min_rtt=s0[14]
 
+            
+
             self.local_counter+=1
+            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
 
             if self.use_normalizer==True:
                 if evaluation!=True:
@@ -332,6 +339,7 @@ class TCP_Env_Wrapper(object):
         modified_action = self.map_action(action)
 
         msg = str(self.wid)+" "+str(modified_action)+"\0"
+        #myLOG.info(msg)
         self.shrmem_w.write(msg)
         self.wid = (self.wid + 1) % 1000
         pass

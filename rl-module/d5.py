@@ -30,13 +30,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import argparse
 import gym
 import numpy as np
+np.set_printoptions(threshold=sys.maxsize)
 import time
 import random
 import datetime
 import sysv_ipc
 import signal
 import pickle
-from utils import logger, Params
+from utils import logger, Params, state_action_logger
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
 
@@ -319,6 +320,14 @@ def main():
                 checkpoint_dir=params.dict['ckptdir'])
         else:
             scaffold = tf.train.Scaffold(saver=tf.train.Saver(keep_checkpoint_every_n_hours=0.5))
+            saver_hook = tf.train.CheckpointSaverHook(
+                                checkpoint_dir=params.dict['ckptdir'],
+                                save_secs=None,
+                                save_steps=500,
+                                saver=tf.train.Saver(),
+                                checkpoint_basename='mymodel.ckpt',
+                                scaffold=None)
+
             mon_sess = tf.train.MonitoredTrainingSession(master=server.target,
                     save_checkpoint_secs=15,
                     save_summaries_secs=None,
@@ -327,7 +336,7 @@ def main():
                     checkpoint_dir=params.dict['ckptdir'],
                     scaffold=scaffold,
                     config=tfconfig,
-                    hooks=None)
+                    hooks=[saver_hook])
 
         agent.assign_sess(mon_sess)
 
@@ -364,16 +373,16 @@ def main():
 
                         if counter %params.dict['hard_target'] == 0 :
                             current_opt_step = agent.sess.run(agent.global_step)
-                            logger.info("Optimize step:{}".format(current_opt_step))
-                            logger.info("rp_buffer ptr:{}".format(agent.rp_buffer.ptr))
+                            #logger.info("Optimize step:{}".format(current_opt_step))
+                            #logger.info("rp_buffer ptr:{}".format(agent.rp_buffer.ptr))
 
                     else:
                         if counter %params.dict['hard_target'] == 0 :
 
                             agent.target_update()
                             current_opt_step = agent.sess.run(agent.global_step)
-                            logger.info("Optimize step:{}".format(current_opt_step))
-                            logger.info("rp_buffer ptr:{}".format(agent.rp_buffer.ptr))
+                            #logger.info("Optimize step:{}".format(current_opt_step))
+                            #logger.info("rp_buffer ptr:{}".format(agent.rp_buffer.ptr))
 
                 counter += 1
 
@@ -403,7 +412,7 @@ def main():
 
                     step_counter += 1
                     s1, r, terminal, error_code = env.step(a,eval_=config.eval)
-
+                    #state_action_logger.info(f"epoch: {epoch}\naction: {a}\nreward: {r}\ngave state: {s1}\nwhere samples/cwnd is at index 3")
                     if error_code == True:
                         s1_rec_buffer = np.concatenate( (s0_rec_buffer[params.dict['state_dim']:], s1) )
 
@@ -414,7 +423,7 @@ def main():
 
                         a1 = a1[0][0]
 
-
+                        #logger.info(f'| {epoch} | {a1}')
                         env.write_action(a1)
 
                     else:

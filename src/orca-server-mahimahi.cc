@@ -514,6 +514,7 @@ void* CntThread(void* information)
                       target_ratio=MIN_CWND;
 
                   ret1 = setsockopt(sock_for_cnt[i], IPPROTO_TCP,TCP_CWND, &target_ratio, sizeof(target_ratio));
+                  DBGPRINT(0,0, "pre_id: %d ocwnd: %d, alpha: %s target_ratio: %d\n", pre_id, orca_info.cwnd, alpha, target_ratio);
                   if(ret1<0)
                   {
                       DBGPRINT(0,0,"setsockopt: for index:%d flow_index:%d ... %s (ret1:%d)\n",i,flow_index,strerror(errno),ret1);

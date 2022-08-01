@@ -30,6 +30,11 @@ import sysv_ipc
 import signal
 import sys
 from time import sleep
+import time
+
+import logging
+logging.basicConfig(filename='./orca_pensieve_envwrapper.log', level=logging.DEBUG)
+myLOG = logging.getLogger(__name__)
 
 class Env_Wrapper(object):
     def __init__(self, name):
@@ -236,6 +241,8 @@ class TCP_Env_Wrapper(object):
 
             self.local_counter+=1
 
+            #myLOG.debug(f"local_count: {self.local_counter} rid: {rid} cwnd: {cwnd} thr: {thr}")
+            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
             if self.use_normalizer==True:
                 if evaluation!=True:
                     self.normalizer.observe(s0)

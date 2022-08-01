@@ -7,7 +7,7 @@ then
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
-    eval_duration=30
+    eval_duration=320
     num_actors=16
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/rl-module"
@@ -20,17 +20,19 @@ then
     epoch=20
     act_port=$port_base
 
-    #DOWNLINK_TRACE="6mbps_random_increase_big0-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_random_increase_small0-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_with_random_increase_then_decrease0-sec-mahimahi"
-    #DOWNLINK_TRACE="12mbps_random_increase_big0-sec-mahimahi"j
-    DOWNLINK_TRACE="24mbps_random_decrease_big_with_3_random_small_increase0-sec-mahimahi"
-    #DOWNLINK_TRACE="24mbps_random_decrease_big0-sec-mahimahi"
-    #DOWNLINK_TRACE="24mbps_with_multiple_random_small_decrease0-sec-mahimahi"
-    #DOWNLINK_TRACE="random_change_between_24_and_2mbps0-sec-mahimahi"
+    
+    #DOWNLINK_TRACE="3mbps_nochange_baseline19-sec-mahimahi"
+    #DOWNLINK_TRACE="3mbps_random_6mbps_max0-sec-mahimahi"
+    #DOWNLINK_TRACE="3mbps_random_increase_big19-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_3mbps_gradual0-sec-mahimahi"
+    DOWNLINK_TRACE="6mbps_3mbps_oscillating19-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_nochange_baseline0-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_random0-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_random_decrease_big0-sec-mahimahi"
+   
 
-    UPLINK_TRACE="wired24"
-    QUEUE_SIZE=1000                                  # in number of packets
+    UPLINK_TRACE="wired12"
+    QUEUE_SIZE=30                                  # in number of packets
     DELAY=10                                         # in ms
     TRAINING_DURATION=600
 
@@ -103,12 +105,14 @@ then
             sleep 2
         done
        
-
+        SECONDS=0
        for pid in $pids
        do
            echo "waiting for $pid"
            wait $pid
        done
+       echo "[$0]: waited for $SECONDS seconds.."
+       echo "original eval duration was: $eval_duration seconds"
 
        #Kill the learner
        sudo kill -s15 $lpid

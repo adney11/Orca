@@ -41,8 +41,9 @@ SUMMARY_DIR = './results'
 LOG_FILE = './results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 #NN_MODEL = None
-NN_MODEL = '/newhome/pensieve/rl_server/results/pretrain_linear_reward.ckpt'
-
+#NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_6mbps_random_increase_big0.ckpt'
+#NN_MODEL = '/newhome/pensieve/rl_server/results/pretrain_linear_reward.ckpt'
+NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_6mbps_3mbps_oscillating.ckpt'
 # video chunk sizes
 size_video1 = [2354772, 2123065, 2177073, 2160877, 2233056, 1941625, 2157535, 2290172, 2055469, 2169201, 2173522, 2102452, 2209463, 2275376, 2005399, 2152483, 2289689, 2059512, 2220726, 2156729, 2039773, 2176469, 2221506, 2044075, 2186790, 2105231, 2395588, 1972048, 2134614, 2164140, 2113193, 2147852, 2191074, 2286761, 2307787, 2143948, 1919781, 2147467, 2133870, 2146120, 2108491, 2184571, 2121928, 2219102, 2124950, 2246506, 1961140, 2155012, 1433658]
 size_video2 = [1728879, 1431809, 1300868, 1520281, 1472558, 1224260, 1388403, 1638769, 1348011, 1429765, 1354548, 1519951, 1422919, 1578343, 1231445, 1471065, 1491626, 1358801, 1537156, 1336050, 1415116, 1468126, 1505760, 1323990, 1383735, 1480464, 1547572, 1141971, 1498470, 1561263, 1341201, 1497683, 1358081, 1587293, 1492672, 1439896, 1139291, 1499009, 1427478, 1402287, 1339500, 1527299, 1343002, 1587250, 1464921, 1483527, 1231456, 1364537, 889412]
@@ -237,6 +238,7 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         nn_model = NN_MODEL
         if nn_model is not None:  # nn_model is the path to file
             saver.restore(sess, nn_model)
+            global LOG
             LOG.info("Model restored.")
 
         init_action = np.zeros(A_DIM)
@@ -276,8 +278,9 @@ def main():
     if len(sys.argv) == 2:
         logfilename = sys.argv[1]
         logging.basicConfig(filename=f'logs/{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
+        global LOG
         LOG = logging.getLogger(__name__)
-
+        print('log file set')
         run(log_file_path=LOG_FILE + '_RL_' + logfilename)
     else:
         run()

@@ -1,5 +1,5 @@
 //============================================================================
-// Author      : Soheil Abbasloo
+// Author      : Adney Cardoza ( adapted from original)
 // Version     : 1.0
 //============================================================================
 
@@ -487,14 +487,14 @@ void* CntThread(void* information)
                         tcp_info_pre=orca_info;
                         t0=timestamp();
 
-                        target_ratio=1.1*orca_info.cwnd;
+                        target_ratio=1.1*orca_info.cwnd; // NOTE(ADNEY): why are they inflating this by 1.1 ??
                         ret1 = setsockopt(sock_for_cnt[i], IPPROTO_TCP,TCP_CWND, &target_ratio,sizeof(target_ratio));
                         if(ret1<0)
                         {
                            DBGPRINT(0,0,"setsockopt: for index:%d flow_index:%d ... %s (ret1:%d)\n",i,          flow_index,strerror(errno),ret1);
                            return((void *)0);
                         }
-                        continue;
+                        continue; // NOTE(ADNEY): if in slow start - then don't write message, and inflate cwnd by 1.1 times
                     }
                     sprintf(message,"%d %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f %.7f",
                             msg_id,delay,(double)orca_info.thr,(double)orca_info.cnt,(double)time_delta,
@@ -509,7 +509,7 @@ void* CntThread(void* information)
                     }
                     
                     msg_id=(msg_id+1)%1000;
-                    DBGPRINT(DBGSERVER,1,"%s\n",message);
+                    DBGPRINT(DBGSERVER,0,"%s\n",message);
                     got_no_zero=1;
                     tcp_info_pre=orca_info;
                     t0=timestamp();

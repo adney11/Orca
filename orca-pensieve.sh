@@ -1,14 +1,13 @@
-if [ $# -eq 3 ]
+if [ $# -eq 2 ]
 then
     source setup.sh
 
     first_time=$1
     port_base=$2
-    argdl=$3
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
-    eval_duration=30
+    eval_duration=320
     num_actors=1
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_pensieve"
@@ -16,7 +15,23 @@ then
     #exit
     orca_binary="orca-server-mahimahi-http"
     echo "[$0]: orca_binary is: $orca_binary"
-    
+
+
+    #DOWNLINK_TRACE="3mbps_nochange_baseline0-sec-mahimahi"
+    #DOWNLINK_TRACE="3mbps_random_6mbps_max0-sec-mahimahi"
+    #DOWNLINK_TRACE="3mbps_random_increase_big19-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_3mbps_gradual0-sec-mahimahi"
+    DOWNLINK_TRACE="6mbps_3mbps_oscillating19-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_nochange_baseline0-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_random0-sec-mahimahi"
+    #DOWNLINK_TRACE="6mbps_random_decrease_big0-sec-mahimahi"
+
+    UPLINK_TRACE="wired12"
+    QUEUE_SIZE=30                                 # in number of packets
+    DELAY=10                                         # in ms
+    TRAINING_DURATION=600
+
+
 
     sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
     sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
@@ -27,41 +42,36 @@ then
 
     if [ $1 -eq 4 ]
     then
-       # If you are here: You are going to perform an evaluation over an emulated link
-       num_actors=1
-       sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
 
-       echo "[$0]: ./learner.sh  $dir $first_time  &"
-       ./learner.sh  $dir ${first_time} &
-       sleep 15
-       echo "bringing up actors"
-       #Bring up the actors:
-       act_id=0
-       for dl in $argdl
-       do
-           echo "[$0]: dl = $dl"
-           downl="wired$dl"
-           upl="wired48"
-           for del in 10
-           do
-               bdp=$((2*dl*del/12))     #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
-               for qs in $((2*bdp))
-               do
-                   ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
-                   pids="$pids $!"
-                   act_id=$((act_id+1))
-                   act_port=$((port_base+act_id))
-                   sleep 2
-               done
-           done
-       done
+        # If you are here: You are going to perform an evaluation over an emulated link
+        num_actors=1
+        sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
+
+        echo "[$0]: ./learner.sh  $dir $first_time  &"
+        ./learner.sh  $dir ${first_time} &
+        sleep 15
+        echo "bringing up actors"
+        #Bring up the actors:
+        act_id=0
+        downl=$DOWNLINK_TRACE
+        upl=$UPLINK_TRACE
+        del=$DELAY
+        qs=$QUEUE_SIZE
+        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
+        pids="$pids $!"
+        act_id=$((act_id+1))
+        act_port=$((port_base+act_id))
+        sleep 2
+
+        SECONDS=0
         for pid in $pids
         do
             echo "[$0]: waiting for $pid"
             wait $pid
         done
+        echo "[$0]: waited for $SECONDS seconds.."
         #Bring down the learner and actors ...
-        echo "sleeping for 315 seconds before killing actors and learner"
+        #echo "sleeping for 315 seconds before killing actors and learner"
         #sleep 315
         echo "killing actors and learner"
         for i in `seq 0 $((num_actors))`
@@ -71,7 +81,7 @@ then
         done
     else
     # If you are here: You are going to start/continue learning a better model!
-
+        echo "[$0]: WARNING: Proceed with caution - buggy code ahead"
       #Bring up the learner:
       echo "[$0]: ./learner.sh  $dir $first_time &"
       if [ $1 -eq 1 ];
@@ -87,28 +97,25 @@ then
        sleep 20
        echo "calling actors"
 
+        echo "[$0]: REMINDER: Training Orca Pensieve with multiple actors not debugged yet..."
+        echo "[$0]: REMINDER: This training session will be with one actor!"
        #Bring up the actors:
        # Here, we go with single actor
-       act_id=0
-       for dl in $argdl
-       do
-           downl="wired$dl"
-           upl=$downl
-           for del in 10
-           do
-               bdp=$((2*dl*del/12))      #12Mbps=1pkt per 1 ms ==> BDP=2*del*BW=2*del*dl/12
-               for qs in $((2*bdp))
-               do
-                    echo "[$0]: ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary"
-                   ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary
-                   pids="$pids $!"
-                   echo "[$0]: initialised actor with pid: $!"
-                   act_id=$((act_id+1))
-                   act_port=$((port_base+act_id))
-                   sleep 5
-               done
-           done
-       done
+        act_id=0
+     
+        downl=$DOWNLINK_TRACE
+        upl=$UPLINK_TRACE
+        qs=$QUEUE_SIZE
+        del=$DELAY
+
+        echo "[$0]: ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary"
+        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary
+        pids="$pids $!"
+        echo "[$0]: initialised actor with pid: $!"
+        act_id=$((act_id+1))
+        act_port=$((port_base+act_id))
+        sleep 5
+       
 
        for pid in $pids
        do
