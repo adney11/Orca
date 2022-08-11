@@ -1,0 +1,129 @@
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/rl_server_no_training.py:225: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:64: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tflearn/initializations.py:165: calling TruncatedNormal.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tflearn/initializations.py:110: calling UniformUnitScaling.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py:507: UniformUnitScaling.__init__ (from tensorflow.python.ops.init_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.initializers.variance_scaling instead with distribution=uniform to get equivalent behavior.
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:31: The name tf.get_collection is deprecated. Please use tf.compat.v1.get_collection instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:31: The name tf.GraphKeys is deprecated. Please use tf.compat.v1.GraphKeys instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:37: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:51: calling reduce_sum_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:60: The name tf.train.RMSPropOptimizer is deprecated. Please use tf.compat.v1.train.RMSPropOptimizer instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/training/rmsprop.py:119: calling Ones.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/util/tf_should_use.py:193: initialize_all_variables (from tensorflow.python.ops.variables) is deprecated and will be removed after 2017-03-02.
+Instructions for updating:
+Use `tf.global_variables_initializer` instead.
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/rl_server_no_training.py:235: The name tf.train.Saver is deprecated. Please use tf.compat.v1.train.Saver instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/training/saver.py:1276: checkpoint_exists (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use standard file APIs to check for files with this prefix.
+INFO:tensorflow:Restoring parameters from /newhome/Orca/pensieve_cwnd/pensieve/seperate_models/pensieve_3mbps_random_6mbps_max.ckpt
+INFO:__main__:Model restored.
+DEBUG:__main__:trying to make request handler
+DEBUG:__main__:making request handler
+INFO:__main__:Listening on port 8333
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/rl_server_no_training.py:225: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:64: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tflearn/initializations.py:165: calling TruncatedNormal.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tflearn/initializations.py:110: calling UniformUnitScaling.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/util/deprecation.py:507: UniformUnitScaling.__init__ (from tensorflow.python.ops.init_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.initializers.variance_scaling instead with distribution=uniform to get equivalent behavior.
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:31: The name tf.get_collection is deprecated. Please use tf.compat.v1.get_collection instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:31: The name tf.GraphKeys is deprecated. Please use tf.compat.v1.GraphKeys instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:37: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:51: calling reduce_sum_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/a3c.py:60: The name tf.train.RMSPropOptimizer is deprecated. Please use tf.compat.v1.train.RMSPropOptimizer instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/training/rmsprop.py:119: calling Ones.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/util/tf_should_use.py:193: initialize_all_variables (from tensorflow.python.ops.variables) is deprecated and will be removed after 2017-03-02.
+Instructions for updating:
+Use `tf.global_variables_initializer` instead.
+WARNING:tensorflow:From /newhome/Orca/pensieve_cwnd/pensieve/rl_server_no_training.py:235: The name tf.train.Saver is deprecated. Please use tf.compat.v1.train.Saver instead.
+
+WARNING:tensorflow:From /users/acardoza/venv/lib/python3.6/site-packages/tensorflow/python/training/saver.py:1276: checkpoint_exists (from tensorflow.python.training.checkpoint_management) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use standard file APIs to check for files with this prefix.
+INFO:tensorflow:Restoring parameters from /newhome/Orca/pensieve_cwnd/pensieve/seperate_models/pensieve_3mbps_random_6mbps_max.ckpt
+INFO:__main__:Model restored.
+DEBUG:__main__:trying to make request handler
+DEBUG:__main__:making request handler
+INFO:__main__:Listening on port 8333
+INFO:__main__:{'nextChunkSize': [2123065, 1431809, 957685, 611087, 398865, 155580], 'lastquality': 1, 'buffer': 4, 'bufferAdjusted': -0.5499999999999998, 'bandwidthEst': 3006.89816360601, 'lastRequest': 0, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641621107, 'lastChunkStartTime': 1659641619909, 'lastChunkSize': 450283}
+INFO:__main__:{'nextChunkSize': [2177073, 1300868, 877771, 571051, 350812, 139857], 'lastquality': 2, 'buffer': 6.224906, 'bufferAdjusted': 1.6749059999999991, 'bandwidthEst': 2998.2019385652266, 'lastRequest': 1, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641622887, 'lastChunkStartTime': 1659641621253, 'lastChunkSize': 611087}
+INFO:__main__:{'nextChunkSize': [2160877, 1520281, 933276, 617681, 382355, 155432], 'lastquality': 2, 'buffer': 8.665073, 'bufferAdjusted': 4.115072999999999, 'bandwidthEst': 3005.562314618176, 'lastRequest': 2, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641624448, 'lastChunkStartTime': 1659641622935, 'lastChunkSize': 571051}
+INFO:__main__:{'nextChunkSize': [2233056, 1472558, 996749, 652874, 411561, 163442], 'lastquality': 2, 'buffer': 10.966604, 'bufferAdjusted': 6.4166039999999995, 'bandwidthEst': 3002.5971971248946, 'lastRequest': 3, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641626146, 'lastChunkStartTime': 1659641624496, 'lastChunkSize': 617681}
+INFO:__main__:{'nextChunkSize': [1941625, 1224260, 801058, 520315, 318564, 126289], 'lastquality': 2, 'buffer': 13.172378, 'bufferAdjusted': 8.622378, 'bandwidthEst': 3001.6225646311946, 'lastRequest': 4, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641627937, 'lastChunkStartTime': 1659641626195, 'lastChunkSize': 652874}
+INFO:__main__:{'nextChunkSize': [2157535, 1388403, 905515, 561791, 352642, 153295], 'lastquality': 2, 'buffer': 15.788442, 'bufferAdjusted': 11.238442, 'bandwidthEst': 3020.64391297297, 'lastRequest': 5, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641629322, 'lastChunkStartTime': 1659641627989, 'lastChunkSize': 520315}
+INFO:__main__:{'nextChunkSize': [2290172, 1638769, 1060487, 709534, 437162, 173849], 'lastquality': 2, 'buffer': 18.187279, 'bufferAdjusted': 13.637279000000003, 'bandwidthEst': 3001.3441057937366, 'lastRequest': 6, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641630925, 'lastChunkStartTime': 1659641629374, 'lastChunkSize': 561791}
+INFO:__main__:{'nextChunkSize': [2055469, 1348011, 852833, 584846, 374758, 150710], 'lastquality': 2, 'buffer': 20.137172, 'bufferAdjusted': 15.587172000000002, 'bandwidthEst': 2955.0731433237434, 'lastRequest': 7, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641632975, 'lastChunkStartTime': 1659641630970, 'lastChunkSize': 709534}
+INFO:__main__:{'nextChunkSize': [2169201, 1429765, 913888, 560821, 362795, 139105], 'lastquality': 2, 'buffer': 22.513288, 'bufferAdjusted': 17.963288000000002, 'bandwidthEst': 2950.877850444929, 'lastRequest': 8, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641634599, 'lastChunkStartTime': 1659641633026, 'lastChunkSize': 584846}
+INFO:__main__:{'nextChunkSize': [2173522, 1354548, 939819, 607410, 353220, 141840], 'lastquality': 5, 'buffer': 20.567125, 'bufferAdjusted': 16.017125000000004, 'bandwidthEst': 2950.4415881202794, 'lastRequest': 9, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641640537, 'lastChunkStartTime': 1659641634682, 'lastChunkSize': 2169201}
+INFO:__main__:{'nextChunkSize': [2102452, 1519951, 917428, 594078, 405134, 156148], 'lastquality': 5, 'buffer': 18.731144, 'bufferAdjusted': 14.181144000000003, 'bandwidthEst': 2956.582447062378, 'lastRequest': 10, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641646373, 'lastChunkStartTime': 1659641640590, 'lastChunkSize': 2173522}
+INFO:__main__:{'nextChunkSize': [2209463, 1422919, 946851, 624282, 386351, 160746], 'lastquality': 5, 'buffer': 17.739167, 'bufferAdjusted': 13.189167000000001, 'bandwidthEst': 3060.5792431260898, 'lastRequest': 11, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641651365, 'lastChunkStartTime': 1659641646429, 'lastChunkSize': 2102452}
+INFO:__main__:{'nextChunkSize': [2275376, 1578343, 1036454, 687371, 434409, 179801], 'lastquality': 5, 'buffer': 17.422848000000002, 'bufferAdjusted': 12.872848000000005, 'bandwidthEst': 3246.1293827048917, 'lastRequest': 12, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641655680, 'lastChunkStartTime': 1659641651421, 'lastChunkSize': 2209463}
+INFO:__main__:{'nextChunkSize': [2005399, 1231445, 821631, 526950, 337059, 140051], 'lastquality': 5, 'buffer': 16.990172, 'bufferAdjusted': 12.440172000000004, 'bandwidthEst': 3394.7424910972327, 'lastRequest': 13, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641660113, 'lastChunkStartTime': 1659641655735, 'lastChunkSize': 2275376}
+INFO:__main__:{'nextChunkSize': [2152483, 1471065, 923170, 587876, 366214, 138313], 'lastquality': 5, 'buffer': 16.980172000000003, 'bufferAdjusted': 12.430172000000006, 'bandwidthEst': 3627.462663761381, 'lastRequest': 14, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641664124, 'lastChunkStartTime': 1659641660168, 'lastChunkSize': 2005399}
+INFO:__main__:{'nextChunkSize': [2289689, 1491626, 966699, 617242, 360831, 143509], 'lastquality': 5, 'buffer': 16.770718000000002, 'bufferAdjusted': 12.220718000000005, 'bandwidthEst': 3938.9030324883065, 'lastRequest': 15, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641668333, 'lastChunkStartTime': 1659641664181, 'lastChunkSize': 2152483}
+INFO:__main__:{'nextChunkSize': [2059512, 1358801, 885714, 581493, 372963, 150616], 'lastquality': 5, 'buffer': 16.558763999999996, 'bufferAdjusted': 12.008764, 'bandwidthEst': 4181.276185935106, 'lastRequest': 16, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641672543, 'lastChunkStartTime': 1659641668387, 'lastChunkSize': 2289689}
+INFO:__main__:{'nextChunkSize': [2220726, 1537156, 987708, 639204, 405596, 165384], 'lastquality': 5, 'buffer': 16.893866000000003, 'bufferAdjusted': 12.343866000000006, 'bandwidthEst': 4252.24866277688, 'lastRequest': 17, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641676207, 'lastChunkStartTime': 1659641672601, 'lastChunkSize': 2059512}
+INFO:__main__:{'nextChunkSize': [2156729, 1336050, 923755, 586839, 350713, 140881], 'lastquality': 5, 'buffer': 16.797289, 'bufferAdjusted': 12.247289000000002, 'bandwidthEst': 4302.357484434555, 'lastRequest': 18, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641680305, 'lastChunkStartTime': 1659641676264, 'lastChunkSize': 2220726}
+INFO:__main__:{'nextChunkSize': [2039773, 1415116, 891604, 601738, 386472, 157671], 'lastquality': 5, 'buffer': 16.871554000000003, 'bufferAdjusted': 12.321554000000006, 'bandwidthEst': 4385.60259246057, 'lastRequest': 19, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641684230, 'lastChunkStartTime': 1659641680360, 'lastChunkSize': 2156729}
+INFO:__main__:{'nextChunkSize': [2176469, 1468126, 955231, 616206, 399894, 157812], 'lastquality': 5, 'buffer': 17.147260000000003, 'bufferAdjusted': 12.597260000000006, 'bandwidthEst': 4456.641033425575, 'lastRequest': 20, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641687955, 'lastChunkStartTime': 1659641684305, 'lastChunkSize': 2039773}
+INFO:__main__:{'nextChunkSize': [2221506, 1505760, 968026, 656471, 401853, 163927], 'lastquality': 5, 'buffer': 15.756058999999993, 'bufferAdjusted': 11.206058999999993, 'bandwidthEst': 4077.0835028383176, 'lastRequest': 21, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641693349, 'lastChunkStartTime': 1659641688011, 'lastChunkSize': 2176469}
+INFO:__main__:{'nextChunkSize': [2044075, 1323990, 874175, 536667, 343800, 137654], 'lastquality': 5, 'buffer': 13.147165999999999, 'bufferAdjusted': 8.597165999999998, 'bandwidthEst': 3523.4829943126533, 'lastRequest': 22, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641699955, 'lastChunkStartTime': 1659641693403, 'lastChunkSize': 2221506}
+INFO:__main__:{'nextChunkSize': [2186790, 1383735, 897976, 587236, 359903, 146754], 'lastquality': 5, 'buffer': 11.369090999999997, 'bufferAdjusted': 6.819090999999997, 'bandwidthEst': 3247.9139161767707, 'lastRequest': 23, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641705732, 'lastChunkStartTime': 1659641700012, 'lastChunkSize': 2044075}
+INFO:__main__:{'nextChunkSize': [2105231, 1480464, 905935, 590335, 379700, 153938], 'lastquality': 5, 'buffer': 9.894571, 'bufferAdjusted': 5.344570999999998, 'bandwidthEst': 3122.129472692553, 'lastRequest': 24, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641711205, 'lastChunkStartTime': 1659641705795, 'lastChunkSize': 2186790}
+INFO:__main__:{'nextChunkSize': [2395588, 1547572, 1076599, 696376, 425781, 181901], 'lastquality': 5, 'buffer': 9.637576999999993, 'bufferAdjusted': 5.0875769999999925, 'bandwidthEst': 3102.3747957711143, 'lastRequest': 25, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641715465, 'lastChunkStartTime': 1659641711261, 'lastChunkSize': 2105231}
+INFO:__main__:{'nextChunkSize': [1972048, 1141971, 758197, 487160, 277716, 111155], 'lastquality': 5, 'buffer': 8.618039999999993, 'bufferAdjusted': 4.068039999999993, 'bandwidthEst': 3187.3710293146914, 'lastRequest': 26, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641720482, 'lastChunkStartTime': 1659641715521, 'lastChunkSize': 2395588}
+INFO:__main__:{'nextChunkSize': [2134614, 1498470, 972798, 622896, 400396, 153605], 'lastquality': 5, 'buffer': 8.565133000000003, 'bufferAdjusted': 4.015133000000002, 'bandwidthEst': 3460.68890091371, 'lastRequest': 27, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641724539, 'lastChunkStartTime': 1659641720545, 'lastChunkSize': 1972048}
+INFO:__main__:{'nextChunkSize': [2164140, 1561263, 975811, 641447, 400508, 149029], 'lastquality': 5, 'buffer': 8.135225000000005, 'bufferAdjusted': 3.5852250000000048, 'bandwidthEst': 3738.2647051185513, 'lastRequest': 28, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641728966, 'lastChunkStartTime': 1659641724595, 'lastChunkSize': 2134614}
+INFO:__main__:{'nextChunkSize': [2113193, 1341201, 873429, 570392, 358218, 157421], 'lastquality': 5, 'buffer': 7.607235000000003, 'bufferAdjusted': 3.057235000000002, 'bandwidthEst': 3917.1575875205936, 'lastRequest': 29, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641733491, 'lastChunkStartTime': 1659641729026, 'lastChunkSize': 2164140}
+INFO:__main__:{'nextChunkSize': [2147852, 1497683, 954453, 620283, 400322, 157488], 'lastquality': 5, 'buffer': 7.214304999999996, 'bufferAdjusted': 2.6643049999999953, 'bandwidthEst': 3898.0091280874044, 'lastRequest': 30, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641737888, 'lastChunkStartTime': 1659641733557, 'lastChunkSize': 2113193}
+INFO:__main__:{'nextChunkSize': [2191074, 1358081, 885062, 584349, 369834, 143881], 'lastquality': 5, 'buffer': 6.7921989999999965, 'bufferAdjusted': 2.242198999999996, 'bandwidthEst': 3914.46578592408, 'lastRequest': 31, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641742309, 'lastChunkStartTime': 1659641737947, 'lastChunkSize': 2147852}
+INFO:__main__:{'nextChunkSize': [2286761, 1587293, 1035329, 670129, 412837, 163444], 'lastquality': 5, 'buffer': 6.263388000000006, 'bufferAdjusted': 1.7133880000000055, 'bandwidthEst': 3909.30189946938, 'lastRequest': 32, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641746837, 'lastChunkStartTime': 1659641742366, 'lastChunkSize': 2191074}
+INFO:__main__:{'nextChunkSize': [2307787, 1492672, 1026056, 690253, 401088, 179328], 'lastquality': 5, 'buffer': 5.391597999999988, 'bufferAdjusted': 0.841597999999987, 'bandwidthEst': 3884.9353466000543, 'lastRequest': 33, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641751711, 'lastChunkStartTime': 1659641746892, 'lastChunkSize': 2286761}
+INFO:__main__:{'nextChunkSize': [2143948, 1439896, 943942, 598727, 365161, 159914], 'lastquality': 2, 'buffer': 7.91399899999999, 'bufferAdjusted': 3.363998999999989, 'bandwidthEst': 3886.7249830008095, 'lastRequest': 34, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641753195, 'lastChunkStartTime': 1659641751774, 'lastChunkSize': 690253}
+INFO:__main__:{'nextChunkSize': [1919781, 1139291, 728962, 487812, 321064, 131610], 'lastquality': 2, 'buffer': 10.636491000000007, 'bufferAdjusted': 6.086491000000006, 'bandwidthEst': 3884.297482737322, 'lastRequest': 35, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641754474, 'lastChunkStartTime': 1659641753250, 'lastChunkSize': 598727}
+INFO:__main__:{'nextChunkSize': [2147467, 1499009, 938587, 575591, 361565, 124011], 'lastquality': 2, 'buffer': 13.561237000000006, 'bufferAdjusted': 9.011237000000005, 'bandwidthEst': 3859.4021735699203, 'lastRequest': 36, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641755551, 'lastChunkStartTime': 1659641754524, 'lastChunkSize': 487812}
+INFO:__main__:{'nextChunkSize': [2133870, 1427478, 908665, 605884, 378327, 144254], 'lastquality': 2, 'buffer': 16.36968200000001, 'bufferAdjusted': 11.819682000000013, 'bandwidthEst': 3850.009968500304, 'lastRequest': 37, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641756742, 'lastChunkStartTime': 1659641755597, 'lastChunkSize': 575591}
+INFO:__main__:{'nextChunkSize': [2146120, 1402287, 930577, 587506, 390680, 149991], 'lastquality': 5, 'buffer': 15.979473000000013, 'bufferAdjusted': 11.429473000000012, 'bandwidthEst': 3921.1411142160864, 'lastRequest': 38, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641761125, 'lastChunkStartTime': 1659641756791, 'lastChunkSize': 2133870}
+INFO:__main__:{'nextChunkSize': [2108491, 1339500, 858450, 566904, 345516, 147968], 'lastquality': 5, 'buffer': 15.44735, 'bufferAdjusted': 10.89735, 'bandwidthEst': 3893.7947505808484, 'lastRequest': 39, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641765654, 'lastChunkStartTime': 1659641761179, 'lastChunkSize': 2146120}
+INFO:__main__:{'nextChunkSize': [2184571, 1527299, 1025005, 641452, 384505, 161857], 'lastquality': 5, 'buffer': 15.054788000000002, 'bufferAdjusted': 10.504788000000001, 'bandwidthEst': 3890.9782009460055, 'lastRequest': 40, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641770047, 'lastChunkStartTime': 1659641765710, 'lastChunkSize': 2108491}
+INFO:__main__:{'nextChunkSize': [2121928, 1343002, 886255, 599477, 372093, 145210], 'lastquality': 5, 'buffer': 14.48657399999999, 'bufferAdjusted': 9.93657399999999, 'bandwidthEst': 3891.196555743311, 'lastRequest': 41, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641774618, 'lastChunkStartTime': 1659641770103, 'lastChunkSize': 2184571}
+INFO:__main__:{'nextChunkSize': [2219102, 1587250, 973972, 634861, 438281, 172312], 'lastquality': 5, 'buffer': 14.149943000000007, 'bufferAdjusted': 9.599943000000007, 'bandwidthEst': 3898.9857915939897, 'lastRequest': 42, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641778953, 'lastChunkStartTime': 1659641774673, 'lastChunkSize': 2121928}
+INFO:__main__:{'nextChunkSize': [2124950, 1464921, 958994, 630203, 398987, 167025], 'lastquality': 5, 'buffer': 13.548809000000006, 'bufferAdjusted': 8.998809000000005, 'bandwidthEst': 3894.4578088351072, 'lastRequest': 43, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641783552, 'lastChunkStartTime': 1659641779017, 'lastChunkSize': 2219102}
+INFO:__main__:{'nextChunkSize': [2246506, 1483527, 982064, 638661, 393804, 160064], 'lastquality': 5, 'buffer': 13.062871000000001, 'bufferAdjusted': 8.512871, 'bandwidthEst': 3895.093625451012, 'lastRequest': 44, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641788038, 'lastChunkStartTime': 1659641783610, 'lastChunkSize': 2124950}
+INFO:__main__:{'nextChunkSize': [1961140, 1231456, 830730, 538612, 331053, 137507], 'lastquality': 5, 'buffer': 12.458829000000009, 'bufferAdjusted': 7.908829000000008, 'bandwidthEst': 3907.4529932276646, 'lastRequest': 45, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641792643, 'lastChunkStartTime': 1659641788094, 'lastChunkSize': 2246506}
+INFO:__main__:{'nextChunkSize': [2155012, 1364537, 846370, 550906, 314107, 118421], 'lastquality': 5, 'buffer': 12.420131999999995, 'bufferAdjusted': 7.870131999999995, 'bandwidthEst': 3920.7249752386847, 'lastRequest': 46, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641796684, 'lastChunkStartTime': 1659641792700, 'lastChunkSize': 1961140}
+INFO:__main__:{'nextChunkSize': [1433658, 889412, 598850, 391450, 255954, 112270], 'lastquality': 5, 'buffer': 11.98281, 'bufferAdjusted': 7.43281, 'bandwidthEst': 3916.0610626982802, 'lastRequest': 47, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641801116, 'lastChunkStartTime': 1659641796742, 'lastChunkSize': 2155012}
+INFO:__main__:{'nextChunkSize': 0, 'lastquality': 5, 'buffer': 10.69916600000002, 'bufferAdjusted': 6.149166000000019, 'bandwidthEst': 3919.9957736085403, 'lastRequest': 48, 'RebufferTime': 1244, 'lastChunkFinishTime': 1659641804087, 'lastChunkStartTime': 1659641801177, 'lastChunkSize': 1433658}

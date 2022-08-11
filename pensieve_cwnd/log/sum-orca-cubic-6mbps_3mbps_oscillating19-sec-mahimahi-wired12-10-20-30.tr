@@ -1,0 +1,112 @@
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Can't open /newhome/Orca/pensieve_cwnd/log/down-orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30: No such file or directory at /newhome/Orca/pensieve_cwnd/mm-thr line 42.
+Must have at least one event at /newhome/Orca/pensieve_cwnd/mm-thr line 150.
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 6.04 Mbits/s
+Average throughput: 0.00 Mbits/s (0.0% utilization)
+95th percentile per-packet queueing delay: 2 ms
+Average per packet delay: 1 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 6.04 Mbits/s
+Average throughput: 0.00 Mbits/s (0.0% utilization)
+95th percentile per-packet queueing delay: 2 ms
+Average per packet delay: 2 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 6.04 Mbits/s
+Average throughput: 0.00 Mbits/s (0.0% utilization)
+95th percentile per-packet queueing delay: 2 ms
+Average per packet delay: 2 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 6.04 Mbits/s
+Average throughput: 0.00 Mbits/s (0.0% utilization)
+95th percentile per-packet queueing delay: 2 ms
+Average per packet delay: 2 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.60 Mbits/s
+Average throughput: 0.40 Mbits/s (8.8% utilization)
+95th percentile per-packet queueing delay: 104 ms
+Average per packet delay: 32 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.62 Mbits/s
+Average throughput: 0.55 Mbits/s (11.9% utilization)
+95th percentile per-packet queueing delay: 106 ms
+Average per packet delay: 32 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.61 Mbits/s
+Average throughput: 0.41 Mbits/s (8.8% utilization)
+95th percentile per-packet queueing delay: 103 ms
+Average per packet delay: 30 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.61 Mbits/s
+Average throughput: 0.41 Mbits/s (8.9% utilization)
+95th percentile per-packet queueing delay: 103 ms
+Average per packet delay: 29 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 6.05 Mbits/s
+Average throughput: 0.00 Mbits/s (0.1% utilization)
+95th percentile per-packet queueing delay: 2 ms
+Average per packet delay: 1 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.62 Mbits/s
+Average throughput: 0.40 Mbits/s (8.7% utilization)
+95th percentile per-packet queueing delay: 104 ms
+Average per packet delay: 32 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.62 Mbits/s
+Average throughput: 0.42 Mbits/s (9.0% utilization)
+95th percentile per-packet queueing delay: 104 ms
+Average per packet delay: 30 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.62 Mbits/s
+Average throughput: 0.42 Mbits/s (9.0% utilization)
+95th percentile per-packet queueing delay: 104 ms
+Average per packet delay: 30 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.79 Mbits/s
+Average throughput: 3.55 Mbits/s (93.8% utilization)
+95th percentile per-packet queueing delay: 122 ms
+Average per packet delay: 78 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.79 Mbits/s
+Average throughput: 3.55 Mbits/s (93.8% utilization)
+95th percentile per-packet queueing delay: 122 ms
+Average per packet delay: 78 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.79 Mbits/s
+Average throughput: 3.55 Mbits/s (93.8% utilization)
+95th percentile per-packet queueing delay: 122 ms
+Average per packet delay: 78 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.08 Mbits/s
+Average throughput: 0.00 Mbits/s (0.1% utilization)
+95th percentile per-packet queueing delay: 12 ms
+Average per packet delay: 3 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 4.42 Mbits/s
+Average throughput: 0.01 Mbits/s (0.1% utilization)
+95th percentile per-packet queueing delay: 13 ms
+Average per packet delay: 3 ms
+------------------------------
+orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.79 Mbits/s
+Average throughput: 3.55 Mbits/s (93.7% utilization)
+95th percentile per-packet queueing delay: 121 ms
+Average per packet delay: 78 ms
+------------------------------

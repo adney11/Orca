@@ -1,0 +1,15 @@
+DEBUG:__main__:starting run_video
+DEBUG:__main__:url is: http://128.105.144.156:44444/myindex_RL.html
+DEBUG:__main__:copy over the chrome user dir...
+DEBUG:__main__:start abr algorithm server...
+DEBUG:__main__:rl server command is: exec /users/acardoza/venv/bin/python /newhome/Orca/orca_pensieve/pensieve/rl_server_no_training.py orca-cubic-6mbps_3mbps_oscillating19-sec-mahimahi-wired12-10-20-30
+DEBUG:__main__:starting display...
+DEBUG:pyvirtualdisplay.abstractdisplay:command: ['Xvfb', '-br', '-nolisten', 'tcp', '-screen', '0', '800x600x24', '-displayfd', '7']
+DEBUG:pyvirtualdisplay.abstractdisplay:set $DISPLAY=:0
+DEBUG:__main__:display started...
+DEBUG:__main__:initialize chrome driver
+DEBUG:pyvirtualdisplay.abstractdisplay:set $DISPLAY=localhost:10.0
+DEBUG:pyvirtualdisplay.abstractdisplay:stdout=b''
+DEBUG:pyvirtualdisplay.abstractdisplay:stderr=b''
+ERROR:__main__:Message: Service /newhome/Orca/orca_pensieve/pensieve/abr_browser_dir/chromedriver unexpectedly exited. Status code was: 127
+

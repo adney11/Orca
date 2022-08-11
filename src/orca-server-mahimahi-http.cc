@@ -654,7 +654,8 @@ void* DataThread(void* info)
             DBGMARK(0,0, "requesting for resource: %s\n",request_line->resource);
             char* ext = parse_resource_extension(request_line->resource);
             char content_type[100], content_path[100];
-            sprintf(content_path, "%s%s", HTTP_SERVER_ROOT_PATH, request_line->resource);
+            const char* ORCAPEN_SERVER_ROOT_PATH = "/newhome/Orca/orca_pensieve/pensieve/video_server";
+            sprintf(content_path, "%s%s", ORCAPEN_SERVER_ROOT_PATH, request_line->resource);
             char status[] = "OK";
             char reply_code = 200;
 

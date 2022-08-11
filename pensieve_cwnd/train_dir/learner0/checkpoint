@@ -1,0 +1,2 @@
+model_checkpoint_path: "/newhome/Orca/pensieve_cwnd/train_dir/learner0/model.ckpt-38571"
+all_model_checkpoint_paths: "/newhome/Orca/pensieve_cwnd/train_dir/learner0/model.ckpt-38571"

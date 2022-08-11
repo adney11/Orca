@@ -1,0 +1,12 @@
+orca-cubic-3mbps_random_6mbps_max19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.07 Mbits/s
+Average throughput: 0.08 Mbits/s (2.5% utilization)
+95th percentile per-packet queueing delay: 71 ms
+Average per packet delay: 17 ms
+------------------------------
+orca-cubic-3mbps_random_6mbps_max19-sec-mahimahi-wired12-10-20-30
+Average capacity: 3.78 Mbits/s
+Average throughput: 2.15 Mbits/s (56.8% utilization)
+95th percentile per-packet queueing delay: 112 ms
+Average per packet delay: 75 ms
+------------------------------

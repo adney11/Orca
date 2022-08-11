@@ -43,7 +43,7 @@ process_id = sys.argv[3]
 logfilename = sys.argv[4]
 sleep_time = random.randint(1,5)
 
-logging.basicConfig(filename=f'logs/{logfilename}-run_video.log', level=logging.DEBUG)
+logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
 	
@@ -99,6 +99,7 @@ try:
 	options.add_argument('--ignore-certificate-errors')
 	options.add_argument('--disable-web-security')
 	options.add_argument('--autoplay-policy=no-user-gesture-required')
+	options.add_argument('--dns-prefetch-disable')
 	experimentalFlags = ['block-insecure-private-network-requests@2']
 	chromeLocalStatePrefs = {'browser.enabled_labs_experiments': experimentalFlags}
 	options.add_experimental_option('localState', chromeLocalStatePrefs)
