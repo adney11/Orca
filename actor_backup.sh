@@ -1,5 +1,5 @@
 #!/bin/bash -x
-if [ $# != 14 ]
+if [ $# != 13 ]
 then
     echo -e "usage:$0 port period first_time [underlying scheme:cubic , vegas , westwood , illinois , bbr, yeah , veno, scal , htcp , cdg , hybla ,... ] [path to ddpg.py] [actor id] [downlink] [uplink] [one-way link delay] [time time] [Qsize] [Max iterations per run]"
     exit
@@ -20,8 +20,6 @@ qsize=${11}
 max_it=${12}
 orca_binary=${13}
 
-abr_algo=${14}
-
 echo "[$0]: Running orca-$scheme: $down"
 echo "[$0]: orca_binary is: $orca_binary"
 echo "[$0]: full path is: $path/$orca_binary"
@@ -29,13 +27,13 @@ echo "[$0]: full path is: $path/$orca_binary"
 
 trace=""
 scheme_des="orca-$scheme-$latency-$period-$qsize"
-log="orca-$scheme-$down-$up-$latency-${period}-$qsize-$abr_algo"
+log="orca-$scheme-$down-$up-$latency-${period}-$qsize"
 
 #Bring up the actor i:
 echo "[$0]: will be done in $finish_time seconds ..."
-echo "[$0]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo"
+echo "[$0]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it"
 
-$path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo
+$path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it
 echo "[$0]: finished running $orca_binary" 
 #sudo killall -s15 python
 #sleep 10

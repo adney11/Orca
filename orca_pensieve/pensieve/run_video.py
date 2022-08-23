@@ -37,10 +37,10 @@ def timeout_handler(signum, frame):
 
 ip = sys.argv[1]
 port = sys.argv[2]
-abr_algo = "RL"
 run_time = 320
 process_id = sys.argv[3]
 logfilename = sys.argv[4]
+abr_algo = sys.argv[5] #"RL"
 sleep_time = random.randint(1,5)
 
 logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG)
@@ -77,9 +77,9 @@ try:
 	elif abr_algo == 'fastMPC':
 		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/mpc_server.py ' + logfilename
 	elif abr_algo == 'robustMPC':
-		command = 'exec ' + python_binary + ' ../rl_server/robust_mpc_server.py ' + logfilename
+		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/robust_mpc_server.py ' + logfilename
 	else:
-		command = 'exec ' + python_binary + ' ../rl_server/simple_server.py ' + abr_algo + ' ' + logfilename
+		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/simple_server.py ' + abr_algo + ' ' + logfilename
 	LOG.debug(f"rl server command is: {command}")
 	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 	sleep(2)

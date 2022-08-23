@@ -34,10 +34,12 @@
 #define MAX_CWND 10000
 #define MIN_CWND 4
 
+char* abr_algo;
+
 int main(int argc, char **argv)
 {
     DBGPRINT(DBGSERVER,4,"Main\n");
-    if(argc!=14)
+    if(argc!=15)
 	{
         DBGERROR("argc:%d\n",argc);
         for(int i=0;i<argc;i++)
@@ -70,6 +72,9 @@ int main(int argc, char **argv)
     duration=atoi(argv[11]);
     qsize=atoi(argv[12]);
     duration_steps=atoi(argv[13]);
+
+    
+    abr_algo=argv[14];
 
     start_server(flow_num, client_port);
 	DBGMARK(DBGSERVER,0,"DONE!\n");
@@ -165,14 +170,15 @@ void start_server(int flow_num, int client_port)
     DBGMARK(0,0, "python binary is: %s\n", python_binary);
     char client_script[] = "/newhome/Orca/orca_pensieve/pensieve/run_video.py";
     DBGMARK(0,0, "client_script is: %s\n", client_script);
-    char container_cmd_format_str[] = "sudo -u `whoami` %s %s %s %d %d %s";
+    char container_cmd_format_str[] = "sudo -u `whoami` %s %s %s %d %d %s %s";
     DBGMARK(0,0, "container_cmd_format_str: %s\n", container_cmd_format_str);
     char ip[] = "$MAHIMAHI_BASE";
     DBGMARK(0,0, "ip is: %s\n", ip);
     DBGMARK(0,0, "client_port: %d\n", client_port);
     DBGMARK(0,0, "actor_id: %d\n",actor_id);
     DBGMARK(0,0, "log_file: %s\n",log_file);
-    sprintf(container_cmd, container_cmd_format_str, python_binary, client_script, ip, client_port, actor_id, log_file);
+    DBGMARK(0,0, "abr_algo: %s\n",abr_algo);
+    sprintf(container_cmd, container_cmd_format_str, python_binary, client_script, ip, client_port, actor_id, log_file, abr_algo);
     DBGMARK(0,0, "container_cmd: %s\n", container_cmd);
     char cmd[1000];
     DBGMARK(0,0, "initalised cmd\n");

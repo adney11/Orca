@@ -1,9 +1,12 @@
-if [ $# -eq 2 ]
+if [ $# -eq 3 ]
 then
     source setup.sh
 
     first_time=$1
     port_base=$2
+
+    abr_algo=$3
+
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
@@ -18,10 +21,10 @@ then
 
 
     #DOWNLINK_TRACE="3mbps_nochange_baseline19-sec-mahimahi"
-    DOWNLINK_TRACE="3mbps_random_6mbps_max19-sec-mahimahi"
+    #DOWNLINK_TRACE="3mbps_random_6mbps_max19-sec-mahimahi"
     #DOWNLINK_TRACE="3mbps_random_increase_big19-sec-mahimahi"
     #DOWNLINK_TRACE="6mbps_3mbps_gradual0-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_3mbps_oscillating19-sec-mahimahi"
+    DOWNLINK_TRACE="6mbps_3mbps_oscillating19-sec-mahimahi"
     #DOWNLINK_TRACE="6mbps_nochange_baseline19-sec-mahimahi"
     #DOWNLINK_TRACE="6mbps_random0-sec-mahimahi"
     #DOWNLINK_TRACE="6mbps_random_decrease_big0-sec-mahimahi"
@@ -57,7 +60,7 @@ then
         upl=$UPLINK_TRACE
         del=$DELAY
         qs=$QUEUE_SIZE
-        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary &
+        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo & # add abr_algo here
         pids="$pids $!"
         act_id=$((act_id+1))
         act_port=$((port_base+act_id))
@@ -137,6 +140,6 @@ then
        done
     fi
 else
-    echo "usage: $0 [{Learning from scratch=1} {Continue your learning=0} {Just Do Evaluation=4}] [base port number ]"
+    echo "usage: $0 [{Learning from scratch=1} {Continue your learning=0} {Just Do Evaluation=4}] [base port number ] [abr_algo]"
 fi
 
