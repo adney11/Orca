@@ -164,7 +164,7 @@ def main():
     config = parser.parse_args()
 
     logfilename=f"{config.job_name}{config.task}"
-    logging.basicConfig(filename=f'./orca_pensieve/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
+    logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
     LOG = logging.getLogger(__name__)
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))

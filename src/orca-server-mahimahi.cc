@@ -37,7 +37,7 @@
 int main(int argc, char **argv)
 {
     DBGPRINT(DBGSERVER,4,"Main\n");
-    if(argc!=14)
+    if(argc!=15)
 	{
         DBGERROR("argc:%d\n",argc);
         for(int i=0;i<argc;i++)
@@ -70,6 +70,7 @@ int main(int argc, char **argv)
     duration=atoi(argv[11]);
     qsize=atoi(argv[12]);
     duration_steps=atoi(argv[13]);
+    char* abr_algo=argv[14];
 
     start_server(flow_num, client_port);
 	DBGMARK(DBGSERVER,5,"DONE!\n");

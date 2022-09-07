@@ -12,13 +12,13 @@ path=$1
 first_time=$2
 ##
 echo "Bring up the learner:"
-if [ $first_time -eq 1 ];
+if [ $first_time -eq 1 ]
 then
     /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path &
 elif [ $first_time -eq 4 ]
 then
     echo "bringing up learner for evaluation"
-    /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load --eval &
+    /users/acardoza/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load --eval &
 else
-    /users/`whoami`/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load &
+    /users/acardoza/venv/bin/python $path/d5.py --job_name=learner --task=0 --base_path=$path --load &
 fi

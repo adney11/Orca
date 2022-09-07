@@ -282,8 +282,6 @@ void start_server(int flow_num, int client_port)
     }
     DBGPRINT(0,0,"RL Module is Ready. Let's Start ...\n\n");    
     usleep(actor_id*10000+10000);
-    //Now its time to start the server-client app and tune C2TCP socket.
-    system(final_cmd);
         
     //Start listen
     int maxfdp=-1;
@@ -298,6 +296,10 @@ void start_server(int flow_num, int client_port)
         if(sock[i]>maxfdp)
             maxfdp=sock[i];
     }
+
+    //Now its time to start the server-client app and tune C2TCP socket.
+    DBGPRINT(0,0, "Starting the container command\n")
+    system(final_cmd);
 
     //Timeout {1Hour} if something goes wrong! (Maybe  mahimahi error...!)
     maxfdp=maxfdp+1;
@@ -336,6 +338,7 @@ void start_server(int flow_num, int client_port)
                 close(sock[flow_index]);
                 return;
             }
+            DBGPRINT(0,0,"Accepted connection with value: %d, flow_index: %d\n", value, flow_index);
             sock_for_cnt[flow_index]=value;
             flows[flow_index].flowinfo.sock=value;
             flows[flow_index].dst_addr=client_addr[flow_index];
@@ -348,6 +351,7 @@ void start_server(int flow_num, int client_port)
                       
                 if (flow_index==0)
                 {
+                    DBGPRINT(0,0, "Flow index is 0, so we are attempting to start Control and Timer Thread\n");
                     if(pthread_create(&cnt_thread, NULL , CntThread, (void*)info) < 0)
                     {
                         perror("could not create control thread\n");
@@ -361,6 +365,8 @@ void start_server(int flow_num, int client_port)
                         return;
                     }
 
+                } else {
+                    DBGPRINT(0,0, "Flow index is not 0, so not starting control or timer thread\n");
                 }
                 
             DBGPRINT(0,0,"Server is Connected to the client...\n");
@@ -372,6 +378,7 @@ void start_server(int flow_num, int client_port)
 
 void* TimerThread(void* information)
 {
+    DBGPRINT(0,0,"Timer thread started!\n");
     uint64_t start=timestamp();
     unsigned int elapsed; 
     if ((duration!=0))
@@ -406,6 +413,7 @@ void* CntThread(void* information)
         DBGPRINT(0,0,"Cannot get priority for the Data thread: %s\n",strerror(errno));
     }
     */
+   DBGPRINT(0,0, "Control thread started!\n");
 	int ret1;
     double min_rtt_=0.0;
     double pacing_rate=0.0;
@@ -515,7 +523,7 @@ void* CntThread(void* information)
                     }
                     
                     msg_id=(msg_id+1)%1000;
-                    DBGPRINT(DBGSERVER,0,"%s\n",message);
+                    //DBGPRINT(DBGSERVER,0,"%s\n",message);
                     got_no_zero=1;
                     tcp_info_pre=orca_info;
                     t0=timestamp();
@@ -632,7 +640,7 @@ void* DataThread(void* info)
     //pthread_t send_msg_thread;
 
     // manage flow id for local flow state
-
+    DBGPRINT(0,0,"Data Thread Started!\n");
 	cFlow* flow = (cFlow*)info;
 	int sock_local = flow->flowinfo.sock;
 	char* src_ip;
@@ -646,6 +654,7 @@ void* DataThread(void* info)
 
 	while ((len = recv(sock_local, read_message, BUFSIZ+1, 0)) > 0) {
         //len = recv(sock_local, read_message, BUFSIZ+1, 0);
+        DBGPRINT(0,0,"\nInside recv while loop on server\n");
         if(len<=0)
         {
             DBGMARK(DBGSERVER,1,"recv failed! \n");
@@ -686,6 +695,7 @@ void* DataThread(void* info)
             DBGMARK(0,0, "unimplemented logic for method: %s\n", request_line->method);
         }
     }
+    DBGMARK(0,0, "Recv While ended, with recv returning value: %d\n", len);
     DBGMARK(0,0,"socket is closed - ending data_thread\n");
 	return((void *)0);
 }

@@ -31,28 +31,40 @@ class Trace_Generator():
     def _get_new_thr(self, prev_thr, change_type):
         #print(f"change_type: {change_type}")
         if change_type == 'random-big':
-            change = random.uniform(3, 5)
+            _min = 1
+            _max = 2
+            change = random.uniform(_min, _max)
             sign = random.randint(0, 10)
             return self._clamp(prev_thr + math.pow(-1, sign) * change)
         elif change_type == 'random-small':
-            change = random.uniform(0, 2)
+            _min = 0.2
+            _max = 0.9
+            change = random.uniform(_min, _max)
             sign = random.randint(0, 10)
             return self._clamp(prev_thr + math.pow(-1, sign) * change)
         elif change_type == 'random-increase-small':
-            change = random.uniform(0, 2)
+            _min = 0.2
+            _max = 0.9
+            change = random.uniform(_min, _max)
             return self._clamp(prev_thr + change)
         elif change_type == 'random-increase-big':
-            change = random.uniform(3, 5)
+            _min = 1
+            _max = 2
+            change = random.uniform(_min, _max)
             #print(f"change to be added: {change}")
             val = self._clamp(prev_thr + change)
             #print(f'val: {val}')
             return val    
         elif change_type == 'random-decrease-small':
-            change = random.uniform(0, 2)            
+            _min = 0.2
+            _max = 0.9
+            change = random.uniform(_min, _max)
             val = self._clamp(prev_thr - change)
             return val
         elif change_type == 'random-decrease-big':
-            change = random.uniform(3, 5)
+            _min = 1
+            _max = 2
+            change = random.uniform(_min, _max)
             return self._clamp(prev_thr - change)
         else:
             change_type = change_type.split('-')
@@ -203,7 +215,7 @@ if __name__ == "__main__":
     max_thr = float(sys.argv[7])
     trace_name = sys.argv[8]
     variants = int(sys.argv[9])
-    gen = Trace_Generator(min_thr, max_thr, padding=1, jitter_freq=100)
+    gen = Trace_Generator(min_thr, max_thr, padding=0.5, jitter_freq=999)
     
     time_ms_all, thr_all = gen.generate_trace(start_thr, duration, change_times, change_type, jitter, variants, trace_name)
     for i in range(len(time_ms_all)):
@@ -215,6 +227,7 @@ if __name__ == "__main__":
 
     #for i in range(len(time_ms)):
     #    print(f"{time_ms[i]} {thr[i]}")
+    print(f"plotting sample of: {trace_name}")
     fig, ax = plt.subplots()
     ax.plot(time_sec, thr_sec)
     ax.set(xlabel="time (sec)", ylabel='link capacity (Mbps)', title=trace_name)
