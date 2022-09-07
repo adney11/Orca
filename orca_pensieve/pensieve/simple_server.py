@@ -30,6 +30,10 @@ SUMMARY_DIR = './orca_pensieve/results'
 LOG_FILE = './orca_pensieve/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 
+REWARD_TYPE = 'hd'
+LOG_REBUF_PENALTY = 2.66
+HD_REBUF_PENALTY = 8
+
 
 def make_request_handler(input_dict):
 
@@ -47,14 +51,24 @@ def make_request_handler(input_dict):
             send_data = ""
 
             if ( 'lastquality' in post_data ):
-                rebuffer_time = float(post_data['RebufferTime'] -self.input_dict['last_total_rebuf'])
-                reward = \
-                   VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
-                   - REBUF_PENALTY * (post_data['RebufferTime'] - self.input_dict['last_total_rebuf']) / M_IN_K \
-                   - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
-                                                  self.input_dict['last_bit_rate']) / M_IN_K
-                # reward = BITRATE_REWARD[post_data['lastquality']] \
-                #         - 8 * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
+                rebuffer_time = float(post_data['RebufferTime'] - self.input_dict['last_total_rebuf'])
+                if REWARD_TYPE == 'linear':
+                    reward = \
+                    VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
+                    - REBUF_PENALTY * (post_data['RebufferTime'] - self.input_dict['last_total_rebuf']) / M_IN_K \
+                    - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
+                                                    self.input_dict['last_bit_rate']) / M_IN_K
+                elif REWARD_TYPE == 'log':
+                    # --log reward--
+                    log_bit_rate = np.log(VIDEO_BIT_RATE[post_data['lastquality']] / float(VIDEO_BIT_RATE[0]))   
+                    log_last_bit_rate = np.log(self.input_dict['last_bit_rate'] / float(VIDEO_BIT_RATE[0]))
+
+                    reward = log_bit_rate \
+                             - LOG_REBUF_PENALTY * rebuffer_time / M_IN_K \
+                             - SMOOTH_PENALTY * np.abs(log_bit_rate - log_last_bit_rate)
+                elif REWARD_TYPE == 'hd':
+                    reward = BITRATE_REWARD[post_data['lastquality']] \
+                            - HD_REBUF_PENALTY * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
 
                 video_chunk_fetch_time = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
                 video_chunk_size = post_data['lastChunkSize']

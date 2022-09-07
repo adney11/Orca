@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from http.server import HTTPServer, BaseHTTPRequestHandler
 #import SocketServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import base64
 import urllib
 import sys
@@ -9,7 +9,6 @@ import os
 import json
 
 os.environ['CUDA_VISIBLE_DEVICES']=''
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 import tensorflow as tf
@@ -18,6 +17,9 @@ import a3c
 
 import logging
 LOG = None
+#logging.basicConfig(filename='logs/rl_server_no_training.log', level=logging.DEBUG)
+#LOG = logging.getLogger(__name__)
+
 S_INFO = 6  # bit_rate, buffer_size, rebuffering_time, bandwidth_measurement, chunk_til_video_end
 S_LEN = 8  # take how many frames in the past
 A_DIM = 6
@@ -40,10 +42,10 @@ RAND_RANGE = 1000
 SUMMARY_DIR = './orca_pensieve/results'
 LOG_FILE = './orca_pensieve/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
-#NN_MODEL = None
-#NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_6mbps_random_increase_big0.ckpt'
-#NN_MODEL = '/newhome/pensieve/rl_server/results/pretrain_linear_reward.ckpt'
-NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_3mbps_random_6mbps_max.ckpt'
+# NN_MODEL = None
+NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_low-3mbps-hd.ckpt'
+REWARD_TYPE = 'hd'
+
 # video chunk sizes
 size_video1 = [2354772, 2123065, 2177073, 2160877, 2233056, 1941625, 2157535, 2290172, 2055469, 2169201, 2173522, 2102452, 2209463, 2275376, 2005399, 2152483, 2289689, 2059512, 2220726, 2156729, 2039773, 2176469, 2221506, 2044075, 2186790, 2105231, 2395588, 1972048, 2134614, 2164140, 2113193, 2147852, 2191074, 2286761, 2307787, 2143948, 1919781, 2147467, 2133870, 2146120, 2108491, 2184571, 2121928, 2219102, 2124950, 2246506, 1961140, 2155012, 1433658]
 size_video2 = [1728879, 1431809, 1300868, 1520281, 1472558, 1224260, 1388403, 1638769, 1348011, 1429765, 1354548, 1519951, 1422919, 1578343, 1231445, 1471065, 1491626, 1358801, 1537156, 1336050, 1415116, 1468126, 1505760, 1323990, 1383735, 1480464, 1547572, 1141971, 1498470, 1561263, 1341201, 1497683, 1358081, 1587293, 1492672, 1439896, 1139291, 1499009, 1427478, 1402287, 1339500, 1527299, 1343002, 1587250, 1464921, 1483527, 1231456, 1364537, 889412]
@@ -61,7 +63,7 @@ def get_chunk_size(quality, index):
     return sizes[quality]
 
 def make_request_handler(input_dict):
-    LOG.debug("making request handler")
+
     class Request_Handler(BaseHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             self.input_dict = input_dict
@@ -97,23 +99,25 @@ def make_request_handler(input_dict):
                 # option 4. use the metric in SIGCOMM MPC paper
                 rebuffer_time = float(post_data['RebufferTime'] -self.input_dict['last_total_rebuf'])
 
-                # --linear reward--
-                reward = VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
-                        - REBUF_PENALTY * rebuffer_time / M_IN_K \
-                        - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
-                                                  self.input_dict['last_bit_rate']) / M_IN_K
+                if REWARD_TYPE == 'linear':
+                    # --linear reward--
+                    reward = VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
+                            - REBUF_PENALTY * rebuffer_time / M_IN_K \
+                            - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
+                                                      self.input_dict['last_bit_rate']) / M_IN_K
+                elif REWARD_TYPE == 'log':
+                    # --log reward--
+                    log_bit_rate = np.log(VIDEO_BIT_RATE[post_data['lastquality']] / float(VIDEO_BIT_RATE[0]))   
+                    log_last_bit_rate = np.log(self.input_dict['last_bit_rate'] / float(VIDEO_BIT_RATE[0]))
 
-                # --log reward--
-                # log_bit_rate = np.log(VIDEO_BIT_RATE[post_data['lastquality']] / float(VIDEO_BIT_RATE[0]))   
-                # log_last_bit_rate = np.log(self.input_dict['last_bit_rate'] / float(VIDEO_BIT_RATE[0]))
-
-                # reward = log_bit_rate \
-                #          - 4.3 * rebuffer_time / M_IN_K \
-                #          - SMOOTH_PENALTY * np.abs(log_bit_rate - log_last_bit_rate)
-
-                # --hd reward--
-                # reward = BITRATE_REWARD[post_data['lastquality']] \
-                #         - 8 * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
+                    reward = log_bit_rate \
+                            - 4.3 * rebuffer_time / M_IN_K \
+                            - SMOOTH_PENALTY * np.abs(log_bit_rate - log_last_bit_rate)
+                elif REWARD_TYPE == 'hd':
+                    # --hd reward--
+                    reward = BITRATE_REWARD[post_data['lastquality']] \
+                            - 8 * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
+                
 
                 self.input_dict['last_bit_rate'] = VIDEO_BIT_RATE[post_data['lastquality']]
                 self.input_dict['last_total_rebuf'] = post_data['RebufferTime']
@@ -238,7 +242,6 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         nn_model = NN_MODEL
         if nn_model is not None:  # nn_model is the path to file
             saver.restore(sess, nn_model)
-            global LOG
             LOG.info("Model restored.")
 
         init_action = np.zeros(A_DIM)
@@ -265,7 +268,6 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
                       'video_chunk_coount': video_chunk_count,
                       's_batch': s_batch, 'a_batch': a_batch, 'r_batch': r_batch}
 
-        LOG.debug("trying to make request handler")
         # interface to abr_rl server
         handler_class = make_request_handler(input_dict=input_dict)
 
@@ -274,10 +276,11 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         LOG.info('Listening on port ' + str(port))
         httpd.serve_forever()
 
+
 def main():
     if len(sys.argv) == 2:
         logfilename = sys.argv[1]
-        logging.basicConfig(filename=f'./orca_pensieve/logs/{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
+        logging.basicConfig(filename=f'./logs/{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')
@@ -290,8 +293,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        if LOG is not None:
-            LOG.error("Keyboard interrupted.")
+        LOG.error("Keyboard interrupted.")
         try:
             sys.exit(0)
         except SystemExit:

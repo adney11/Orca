@@ -37,13 +37,13 @@ def timeout_handler(signum, frame):
 
 ip = sys.argv[1]
 port = sys.argv[2]
-run_time = 320
+run_time = 200
 process_id = sys.argv[3]
 logfilename = sys.argv[4]
 abr_algo = sys.argv[5] #"RL"
 sleep_time = random.randint(1,5)
-
-logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG)
+FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
 LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
 	
@@ -95,13 +95,17 @@ try:
 	#options=Options()
 	options=webdriver.ChromeOptions()
 	chrome_driver = '/newhome/Orca/orca_pensieve/pensieve/abr_browser_dir/chromedriver'
-	options.add_argument('--user-data-dir=' + chrome_user_dir)
+	options.add_argument('--no-sandbox')
+	options.add_argument('--headless')
+	options.add_argument('--user-data-dir=' + chrome_user_dir)	
 	options.add_argument('--ignore-certificate-errors')
 	options.add_argument('--disable-web-security')
+	options.add_argument('--disable-gpu')
+	options.add_argument('--disable-software-rasterizer')
 	options.add_argument('--autoplay-policy=no-user-gesture-required')
 	options.add_argument('--dns-prefetch-disable')
 	experimentalFlags = ['block-insecure-private-network-requests@2']
-	chromeLocalStatePrefs = {'browser.enabled_labs_experiments': experimentalFlags}
+	chromeLocalStatePrefs = {'browser.enabled_labs_experiments': experimentalFlags}	
 	options.add_experimental_option('localState', chromeLocalStatePrefs)
 	driver=webdriver.Chrome(chrome_driver, chrome_options=options)
 	#chromeservice=Service(executable_path=chrome_driver)
@@ -112,9 +116,13 @@ try:
 	# run chrome
 	driver.set_page_load_timeout(10)
 	dp("page parameters set")
-	sleep(5)
-	dp("getting url")
-	driver.get(url)
+	sleep(10)
+	dp("getting url after sleeping 10 seconds")
+	try:
+		driver.get(url)
+	except TimeoutException as to_ex:
+		dp(f'FAILED TO GET URL: {to_ex}')
+		driver.refresh()
 	dp("got url")
 	dp(f"sleeping for {run_time} seconds")
 	sleep(run_time)
@@ -132,6 +140,7 @@ try:
 	print('done')
 	
 except Exception as e:
+	dp(f'got exception {e}')
 	try: 
 		display.stop()
 	except:

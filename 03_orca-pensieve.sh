@@ -1,4 +1,4 @@
-if [ $# -eq 3 ]
+if [ $# -eq 4 ]
 then
     source setup.sh
 
@@ -6,6 +6,10 @@ then
     port_base=$2
 
     abr_algo=$3
+    trace_prefix="low3mbps"
+    trace_idx=$4
+    trace_postfix="-sec-mahimahi"
+    trace_name="$trace_prefix$trace_idx$trace_postfix"
 
     cur_dir=`pwd -P`
     scheme_="cubic"
@@ -18,20 +22,12 @@ then
     #exit
     orca_binary="orca-server-mahimahi-http"
     echo "[$0]: orca_binary is: $orca_binary"
-
-
-    #DOWNLINK_TRACE="3mbps_nochange_baseline19-sec-mahimahi"
-    #DOWNLINK_TRACE="3mbps_random_6mbps_max19-sec-mahimahi"
-    #DOWNLINK_TRACE="3mbps_random_increase_big19-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_3mbps_gradual0-sec-mahimahi"
-    DOWNLINK_TRACE="6mbps_3mbps_oscillating19-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_nochange_baseline19-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_random0-sec-mahimahi"
-    #DOWNLINK_TRACE="6mbps_random_decrease_big0-sec-mahimahi"
-
-    UPLINK_TRACE="wired12"
+    
+    DOWNLINK_TRACE=$trace_name
+    
+    UPLINK_TRACE="wired6"
     QUEUE_SIZE=30                                 # in number of packets
-    DELAY=10                                         # in ms
+    DELAY=10                                      # in ms
     TRAINING_DURATION=600
 
 
@@ -48,12 +44,13 @@ then
 
         # If you are here: You are going to perform an evaluation over an emulated link
         num_actors=1
-        sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
+        sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base_eval.json > "${dir}/params.json"
 
         echo "[$0]: ./learner.sh  $dir $first_time  &"
-        ./learner.sh  $dir ${first_time} &
-        sleep 15
-        echo "bringing up actors"
+        #./learner.sh  $dir ${first_time} &
+        #echo "sleeping 20 seconds"
+        #sleep 20
+        echo "[$0]: bringing up actor"
         #Bring up the actors:
         act_id=0
         downl=$DOWNLINK_TRACE

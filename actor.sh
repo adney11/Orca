@@ -35,6 +35,9 @@ log="orca-$scheme-$down-$up-$latency-${period}-$qsize-$abr_algo"
 echo "[$0]: will be done in $finish_time seconds ..."
 echo "[$0]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo"
 
+echo "[$0]: sleeping in hopes that learner is ready"
+sleep 10
+echo "[$0]: slept, now calling actor stuff"
 $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo
 echo "[$0]: finished running $orca_binary" 
 #sudo killall -s15 python
@@ -42,15 +45,15 @@ echo "[$0]: finished running $orca_binary"
 echo "[$0]: Finished."
 if [ ${first_time} -eq 2 ] || [ ${first_time} -eq 4 ]
 then
-    echo "Doing Some Analysis ..."
-    echo "path: $path"
+    echo "[$0]: Doing Some Analysis ..."
+    echo "[$0]: path: $path"
     out="sum-${log}.tr"
-    echo "out: $out"
+    echo "[$0]: out: $out"
     sudo echo $log >> $path/log/$out
     sudo perl $path/mm-thr 500 $path/log/down-${log} 1>$path/plots/plot-${log}.svg 2>res_tmp
     sudo cat res_tmp >>$path/log/$out
     sudo echo "------------------------------" >> $path/log/$out
     rm *tmp
 fi
-echo "Done"
+echo "[$0]: Done"
 

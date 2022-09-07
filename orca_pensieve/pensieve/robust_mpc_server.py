@@ -39,7 +39,11 @@ SUMMARY_DIR = './orca_pensieve/results'
 LOG_FILE = './orca_pensieve/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 #NN_MODEL = None
-NN_MODEL = '/newhome/pensieve/rl_server/results/pensieve_6mbps_3mbps_oscillating.ckpt'
+NN_MODEL = '/newhome/orca_pensieve/pensieve/seperate_models/pensieve_low-3mbps-hd.ckpt'
+REWARD_TYPE = 'hd'
+
+LOG_REBUF_PENALTY = 2.66
+HD_REBUF_PENALTY = 8
 
 CHUNK_COMBO_OPTIONS = []
 
@@ -96,23 +100,24 @@ def make_request_handler(input_dict):
                 # option 4. use the metric in SIGCOMM MPC paper
                 rebuffer_time = float(post_data['RebufferTime'] -self.input_dict['last_total_rebuf'])
 
-                # --linear reward--
-                reward = VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
-                        - REBUF_PENALTY * rebuffer_time / M_IN_K \
-                        - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
-                                                  self.input_dict['last_bit_rate']) / M_IN_K
+                if REWARD_TYPE == 'linear':
+                    # --linear reward--
+                    reward = VIDEO_BIT_RATE[post_data['lastquality']] / M_IN_K \
+                            - REBUF_PENALTY * rebuffer_time / M_IN_K \
+                            - SMOOTH_PENALTY * np.abs(VIDEO_BIT_RATE[post_data['lastquality']] -
+                                                    self.input_dict['last_bit_rate']) / M_IN_K
+                elif REWARD_TYPE == 'log':
+                    # --log reward--
+                    log_bit_rate = np.log(VIDEO_BIT_RATE[post_data['lastquality']] / float(VIDEO_BIT_RATE[0]))   
+                    log_last_bit_rate = np.log(self.input_dict['last_bit_rate'] / float(VIDEO_BIT_RATE[0]))
 
-                # --log reward--
-                # log_bit_rate = np.log(VIDEO_BIT_RATE[post_data['lastquality']] / float(VIDEO_BIT_RATE[0]))   
-                # log_last_bit_rate = np.log(self.input_dict['last_bit_rate'] / float(VIDEO_BIT_RATE[0]))
-
-                # reward = log_bit_rate \
-                #          - 4.3 * rebuffer_time / M_IN_K \
-                #          - SMOOTH_PENALTY * np.abs(log_bit_rate - log_last_bit_rate)
-
-                # --hd reward--
-                # reward = BITRATE_REWARD[post_data['lastquality']] \
-                #         - 8 * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
+                    reward = log_bit_rate \
+                             - LOG_REBUF_PENALTY * rebuffer_time / M_IN_K \
+                             - SMOOTH_PENALTY * np.abs(log_bit_rate - log_last_bit_rate)
+                elif REWARD_TYPE == 'hd':
+                    # --hd reward--
+                    reward = BITRATE_REWARD[post_data['lastquality']] \
+                            - HD_REBUF_PENALTY * rebuffer_time / M_IN_K - np.abs(BITRATE_REWARD[post_data['lastquality']] - BITRATE_REWARD_MAP[self.input_dict['last_bit_rate']])
 
                 self.input_dict['last_bit_rate'] = VIDEO_BIT_RATE[post_data['lastquality']]
                 self.input_dict['last_total_rebuf'] = post_data['RebufferTime']
@@ -221,32 +226,33 @@ def make_request_handler(input_dict):
                             curr_buffer -= download_time
                         curr_buffer += 4
                         
-                        # linear reward
-                        #bitrate_sum += VIDEO_BIT_RATE[chunk_quality]
-                        #smoothness_diffs += abs(VIDEO_BIT_RATE[chunk_quality] - VIDEO_BIT_RATE[last_quality])
-
-                        # log reward
-                        # log_bit_rate = np.log(VIDEO_BIT_RATE[chunk_quality] / float(VIDEO_BIT_RATE[0]))
-                        # log_last_bit_rate = np.log(VIDEO_BIT_RATE[last_quality] / float(VIDEO_BIT_RATE[0]))
-                        # bitrate_sum += log_bit_rate
-                        # smoothness_diffs += abs(log_bit_rate - log_last_bit_rate)
-
-                        # hd reward
-                        bitrate_sum += BITRATE_REWARD[chunk_quality]
-                        smoothness_diffs += abs(BITRATE_REWARD[chunk_quality] - BITRATE_REWARD[last_quality])
+                        if REWARD_TYPE == 'linear':
+                            # linear reward
+                            bitrate_sum += VIDEO_BIT_RATE[chunk_quality]
+                            smoothness_diffs += abs(VIDEO_BIT_RATE[chunk_quality] - VIDEO_BIT_RATE[last_quality])
+                        elif REWARD_TYPE == 'log':
+                            # log reward
+                            log_bit_rate = np.log(VIDEO_BIT_RATE[chunk_quality] / float(VIDEO_BIT_RATE[0]))
+                            log_last_bit_rate = np.log(VIDEO_BIT_RATE[last_quality] / float(VIDEO_BIT_RATE[0]))
+                            bitrate_sum += log_bit_rate
+                            smoothness_diffs += abs(log_bit_rate - log_last_bit_rate)
+                        elif REWARD_TYPE == 'hd':
+                            # hd reward
+                            bitrate_sum += BITRATE_REWARD[chunk_quality]
+                            smoothness_diffs += abs(BITRATE_REWARD[chunk_quality] - BITRATE_REWARD[last_quality])
 
                         last_quality = chunk_quality
                     # compute reward for this combination (one reward per 5-chunk combo)
                     # bitrates are in Mbits/s, rebuffer in seconds, and smoothness_diffs in Mbits/s
-                    
-                    # linear reward 
-                    #reward = (bitrate_sum/1000.) - (4.3*curr_rebuffer_time) - (smoothness_diffs/1000.)
-
-                    # log reward
-                    # reward = (bitrate_sum) - (4.3*curr_rebuffer_time) - (smoothness_diffs)
-
-                    # hd reward
-                    reward = bitrate_sum - (8*curr_rebuffer_time) - (smoothness_diffs)
+                    if REWARD_TYPE == 'linear':
+                        # linear reward 
+                        reward = (bitrate_sum/1000.) - (4.3*curr_rebuffer_time) - (smoothness_diffs/1000.)
+                    elif REWARD_TYPE == 'log':
+                        # log reward
+                        reward = (bitrate_sum) - (4.3*curr_rebuffer_time) - (smoothness_diffs)
+                    elif REWARD_TYPE == 'hd':
+                        # hd reward
+                        reward = bitrate_sum - (8*curr_rebuffer_time) - (smoothness_diffs)
 
                     if ( reward > max_reward ):
                         max_reward = reward
@@ -344,7 +350,6 @@ def main():
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')
-        LOG.info('log file set')
         run(log_file_path=LOG_FILE + '_robustMPC_' + trace_file)
     else:
         run()
