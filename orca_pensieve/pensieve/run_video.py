@@ -46,6 +46,8 @@ FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
 LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
+
+REWARD_PORT_BASE = 32000
 	
 # prevent multiple process from being synchronized
 #sleep(int(sleep_time))
@@ -59,6 +61,8 @@ signal.signal(signal.SIGALRM, timeout_handler)
 signal.alarm(run_time + 40)
 	
 try:
+	dp("sleeping for 5 seconds to allow reward server to start listening")
+	sleep(5) # to let the reward server start listening
 	# copy over the chrome user dir
 	dp("copy over the chrome user dir...")
 	default_chrome_user_dir = '/newhome/Orca/orca_pensieve/pensieve/abr_browser_dir/chrome_data_dir'
@@ -72,8 +76,9 @@ try:
 	python_binary = "/users/acardoza/venv/bin/python"
 	rl_server_dir = "/newhome/Orca/orca_pensieve/pensieve"
 	
+	reward_port = REWARD_PORT_BASE + (int(port) % 1000)
 	if abr_algo == 'RL':
-		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/rl_server_no_training.py ' + logfilename
+		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/rl_server_no_training.py ' + logfilename + ' ' + ip + ' ' + str(reward_port)
 	elif abr_algo == 'fastMPC':
 		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/mpc_server.py ' + logfilename
 	elif abr_algo == 'robustMPC':

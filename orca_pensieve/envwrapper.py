@@ -106,13 +106,14 @@ class GYM_Env_Wrapper(Env_Wrapper):
 
 
 class TCP_Env_Wrapper(object):
-    def __init__(self,name, params, config=None, for_init_only=True, shrmem_r=None, shrmem_w=None,use_normalizer=True):
+    def __init__(self,name, params, config=None, for_init_only=True, shrmem_r=None, shrmem_w=None, shrmem_reward=None, use_normalizer=True):
 
         self.params = params
         if not for_init_only:
             self.params = params
             self.shrmem_r = shrmem_r
             self.shrmem_w = shrmem_w
+            self.shrmem_reward = shrmem_reward                                     # NOTE(ADNEY): added this
             self.prev_rid = 99999
             self.wid = 23
             self.local_counter=0
@@ -219,6 +220,27 @@ class TCP_Env_Wrapper(object):
         error_cnt=0
         if succeed == False:
             raise ValueError('read Nothing new from shrmem for a long time')
+
+
+        # NOTE(ADNEY): Add read value from shared reward memory (same as above) 
+        # best effort, we just read the last reward value ever updated - this is for neurips submission 
+        # TODO: clean up - make more robust
+        try:
+            abr_reward = self.shrmem_reward.read()
+        except sysv_ipc.ExistentialError:
+            print("No shared memory for reward Now, python ends gracefully :)")
+            myLOG.error("No shared memory for reward Now, python ends gracefully :)")
+            sys.exit(0)
+            
+        abr_reward = abr_reward.decode('unicode_escape')
+        ari = abr_reward.find('\0')
+        if ari != -1:
+            abr_reward = abr_reward[:ari]
+            myLOG.debug(f"abr_reward recieved from shared memory before processing is: {abr_reward}")
+            abr_reward = np.fromstring(abr_reward, dtype=float, sep=' ')
+        else:
+            myLOG.error("abr_reward didn't have a null ending..")
+        
         reward=0
         state=np.zeros(1)
         w=s0
@@ -242,7 +264,7 @@ class TCP_Env_Wrapper(object):
             self.local_counter+=1
 
             #myLOG.debug(f"local_count: {self.local_counter} rid: {rid} cwnd: {cwnd} thr: {thr}")
-            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
+            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}, {pacing_rate}, {loss_rate}, {packets_out}, {retrans_out}, {max_packets_out}, {pacing_rate / thr}")   
             if self.use_normalizer==True:
                 if evaluation!=True:
                     self.normalizer.observe(s0)
@@ -302,6 +324,8 @@ class TCP_Env_Wrapper(object):
 
             reward  = (thr_n_min-5*loss_rate_n_min)/self.max_bw*delay_metric
 
+            # NOTE(ADNEY): add pensieve_reward here
+            myLOG.debug(f"Orca reward: {reward} : ABR reward: {abr_reward}")
             if self.max_bw!=0:
                 state[0]=thr_n_min/self.max_bw
                 tmp=pacing_rate_n_min/self.max_bw

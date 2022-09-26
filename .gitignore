@@ -3,3 +3,8 @@ orca_pensieve/train_dir/*
 orca_pensieve/log/*
 rl_module/log/*
 traces/*-sec*
+logs/
+orca_pensieve/plots/
+orca_pensieve/results/
+rl_logging/
+state_action/

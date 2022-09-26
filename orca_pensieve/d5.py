@@ -153,6 +153,7 @@ def main():
     parser.add_argument('--train_dir', type=str, default=None)
     parser.add_argument('--mem_r', type=int, default = 123456)
     parser.add_argument('--mem_w', type=int, default = 12345)
+    parser.add_argument('--mem_reward', type=int, default = 54321)
     parser.add_argument('--base_path',type=str, required=True)
     parser.add_argument('--job_name', type=str, choices=['learner', 'actor'], required=True, help='Job name: either {\'learner\', actor}')
     parser.add_argument('--task', type=int, required=True, help='Task id')
@@ -280,7 +281,8 @@ def main():
                     if params.dict['use_TCP']:
                         shrmem_r = sysv_ipc.SharedMemory(config.mem_r)
                         shrmem_w = sysv_ipc.SharedMemory(config.mem_w)
-                        env = TCP_Env_Wrapper(env_str, params, config=config, for_init_only=False, shrmem_r=shrmem_r, shrmem_w=shrmem_w,use_normalizer=params.dict['use_normalizer'])
+                        shrmem_reward = sysv_ipc.SharedMemory(config.mem_reward)
+                        env = TCP_Env_Wrapper(env_str, params, config=config, for_init_only=False, shrmem_r=shrmem_r, shrmem_w=shrmem_w, shrmem_reward=shrmem_reward, use_normalizer=params.dict['use_normalizer'])
                     else:
                         env = GYM_Env_Wrapper(env_str, params)
 

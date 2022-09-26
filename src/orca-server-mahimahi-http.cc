@@ -28,13 +28,26 @@
 #include <cstdlib>
 #include <sys/select.h>
 #include "define.h"
+#include <stdlib.h>
+#include <cstdint>
 
 #include "http_helpers.h"
 //#define CHANGE_TARGET 1
 #define MAX_CWND 10000
 #define MIN_CWND 4
 
+int REWARD_PORT_BASE = 32000;
+
 char* abr_algo;
+
+#pragma pack(1)
+typedef struct reward_payload_t {
+    float reward;
+} reward_payload;
+#pragma pack()
+
+
+int g_reward_port;
 
 int main(int argc, char **argv)
 {
@@ -76,12 +89,18 @@ int main(int argc, char **argv)
     
     abr_algo=argv[14];
 
+
+
     start_server(flow_num, client_port);
 	DBGMARK(DBGSERVER,0,"DONE!\n");
     shmdt(shared_memory);
     shmctl(shmid, IPC_RMID, NULL);
+
     shmdt(shared_memory_rl);
     shmctl(shmid_rl, IPC_RMID, NULL);
+
+    shmdt(shared_memory_reward);
+    shmctl(shmid_reward, IPC_RMID, NULL);
     return 0;
 }
 
@@ -108,6 +127,8 @@ void start_server(int flow_num, int client_port)
 	pthread_t data_thread;
 	pthread_t cnt_thread;
 	pthread_t timer_thread;
+
+    pthread_t reward_thread;
 
 	//Server address
 	struct sockaddr_in server_addr[FLOW_NUM];
@@ -206,11 +227,15 @@ void start_server(int flow_num, int client_port)
      */ 
     key=(key_t) (actor_id*10000+rand()%10000+1);
     key_rl=(key_t) (actor_id*10000+rand()%10000+1);
+    key_reward=(key_t) (actor_id*10000+rand()%10000+1);
+    DBGPRINT(0,0, "finished setting keys for shared memory\n");
     // Setup shared memory, 11 is the size
     if ((shmid = shmget(key, shmem_size, IPC_CREAT | 0666)) < 0)
     {
         printf("Error getting shared memory id");
         return;
+    } else {
+        DBGPRINT(0,0, "got shared memory\n");
     }
         // Attached shared memory
     if ((shared_memory = (char*)shmat(shmid, NULL, 0)) == (char *) -1)
@@ -223,6 +248,8 @@ void start_server(int flow_num, int client_port)
     {
         printf("Error getting shared memory id");
         return;
+    }  else {
+        DBGPRINT(0,0, "got shared memory rl\n");
     }
     // Attached shared memory
     if ((shared_memory_rl = (char*)shmat(shmid_rl, NULL, 0)) == (char *) -1)
@@ -230,17 +257,32 @@ void start_server(int flow_num, int client_port)
         printf("Error attaching shared memory id");
         return;
     } 
+
+    // NOTE(ADNEY): setup pensieve reward shared memory here
+    // setup shared reward memory
+    if ((shmid_reward = shmget(key_reward, shmem_size, IPC_CREAT | 0666)) < 0)
+    {
+        printf("Error getting shared memory reward id");
+        return;
+    }
+    // attach shared reward memory 
+    if ((shared_memory_reward = (char*)shmat(shmid_reward, NULL, 0)) == (char *) -1)
+    {
+        printf("Error attaching shared memory reward");
+        return;
+    }
+
     if (first_time==1){
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d --mem_reward=%d &",path,path,actor_id,path,(int)key,(int)key_rl,(int)key_reward);
         DBGPRINT(0,0,"Starting RL Module (Without load) ...\n%s",cmd);
     }
     else if (first_time==2 || first_time==4){
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d --mem_reward=%d &",path,path,actor_id,path,(int)key,(int)key_rl,(int)key_reward);
         DBGPRINT(0,0,"Starting RL Module (No learning) ...\n%s",cmd);
     }
     else
     {
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d --mem_reward=%d &",path,path,actor_id,path,(int)key,(int)key_rl,(int)key_reward);
         DBGPRINT(0,0,"Starting RL Module (With load) ...\n%s",cmd);
     }
     
@@ -280,9 +322,10 @@ void start_server(int flow_num, int client_port)
             return;
         }   
     }
-    DBGPRINT(0,0,"RL Module is Ready. Let's Start ...\n\n");    
+    DBGPRINT(0,0,"RL Module is Ready....\n\n");    
     usleep(actor_id*10000+10000);
-        
+    // NOTE(ADNEY): start reward thread here
+    
     //Start listen
     int maxfdp=-1;
     fd_set rset; 
@@ -298,9 +341,17 @@ void start_server(int flow_num, int client_port)
     }
 
     //Now its time to start the server-client app and tune C2TCP socket.
-    DBGPRINT(0,0, "Starting the container command\n")
+	DBGPRINT(0,0, "Starting the container command\n");
     system(final_cmd);
-
+    DBGPRINT(0,0, "Let's Start the remote reward listener server");
+    g_reward_port = REWARD_PORT_BASE + (client_port % 1000);
+    DBGPRINT(0,0, "trying to start reward listener on port : %d\n", g_reward_port);
+    if(pthread_create(&reward_thread, NULL, RemoteRewardThread, (void*)&g_reward_port) < 0)
+    {
+        perror("could not create remote reward thread\n");
+        close(sock[flow_index]);
+        return;
+    }
     //Timeout {1Hour} if something goes wrong! (Maybe  mahimahi error...!)
     maxfdp=maxfdp+1;
     struct timeval timeout;
@@ -348,6 +399,9 @@ void start_server(int flow_num, int client_port)
                 close(sock[flow_index]);
                 return;
             }
+            
+            //DBGPRINT(0,0, "sleeping after creating remote thread, to give it chance to connect\n");
+            //usleep(actor_id*10000);
                       
                 if (flow_index==0)
                 {
@@ -364,7 +418,6 @@ void start_server(int flow_num, int client_port)
                         close(sock[flow_index]);
                         return;
                     }
-
                 } else {
                     DBGPRINT(0,0, "Flow index is not 0, so not starting control or timer thread\n");
                 }
@@ -374,6 +427,83 @@ void start_server(int flow_num, int client_port)
         }
     }
     pthread_join(data_thread, NULL);
+}
+
+
+void doRemoteRewardThread(int rfd) 
+{
+    // read message from client and write to shared memory reward
+    char buff[shmem_size];
+    char msg_to_write[shmem_size];
+    int recvd = 0;
+    while ((recvd = read(rfd, &buff, shmem_size)) > 0) {
+        if(recvd <= 0)
+        {
+            DBGMARK(0,0, "reward recv failed!\n");
+            close(rfd);
+            return;
+        }
+        DBGMARK(0,0, "reward bytes recieved: %d bytes\n", recvd);
+        reward_payload *rew_payload = (reward_payload*) buff;
+        DBGMARK(0,0, "reward message recieved: %f\n", rew_payload->reward);
+
+        //write this to memory
+        sprintf(msg_to_write, "%f",(double)rew_payload->reward);
+        //char* reward = strtok_r(buff, " ", &buff_ptr);
+        memcpy(shared_memory_reward, msg_to_write, sizeof(msg_to_write));
+        DBGMARK(0,0, "wrote to shared memory reward\n");
+    }
+    DBGMARK(0,0, "ending remote reward thread!!\n");
+}
+
+// this thread will just start server, listen for float message, write it to shared memory
+void* RemoteRewardThread(void* rewardPort)
+{
+    DBGPRINT(0,0, "Remote Reward Thread Started!\n");
+    int rewardSock, remoteSock, len;
+    struct sockaddr_in reward_server_addr, reward_client_addr;
+    if ((rewardSock = socket(AF_INET, SOCK_STREAM, 0))<0)
+    {
+        DBGMARK(0,0, "rewardsockopt: %s\n", strerror(errno));
+        return 0;
+    }
+    memset(&reward_server_addr, 0, sizeof(reward_server_addr));
+    reward_server_addr.sin_family = AF_INET;
+    reward_server_addr.sin_addr.s_addr = INADDR_ANY;
+    int i_reward_port = * (int*) rewardPort;
+    DBGPRINT(0,0, "reward server port is: %d\n", i_reward_port);
+    reward_server_addr.sin_port=htons(i_reward_port);
+
+    if(bind(rewardSock,(struct sockaddr *)&reward_server_addr, sizeof(struct sockaddr))<0)
+    {
+        DBGMARK(0,0,"bind error reward sock:  555555555: %s\n",strerror(errno));
+        close(rewardSock);
+        return 0;
+    }
+    DBGPRINT(0,0, "reward server bind: successful!\n");
+
+    if((listen(rewardSock, 1)) != 0) 
+    {
+        DBGMARK(0,0, "listen failed on reward sock: 66666666: %s\n", strerror(errno));
+        close(rewardSock);
+        return 0;
+    } else {
+        DBGMARK(0,0, "reward server listening..\n");
+    }
+    int reward_sin_size = sizeof(struct sockaddr_in);
+    int reward_client_sock = accept(rewardSock, (struct sockaddr *)&reward_client_addr, (socklen_t*)&reward_sin_size);
+    if(reward_client_sock < 0)
+    {
+        perror("reward accept error\n");
+        DBGMARK(0,0, "reward : accept : sockopt: %s\n",strerror(errno));
+        DBGMARK(0,0, "reward : accept : sock::%d\n", rewardSock);
+        close(rewardSock);
+        return 0;
+    }
+    DBGMARK(0,0, "accepted reward client connection with fd: %d !! \n", reward_client_sock);
+
+    doRemoteRewardThread(reward_client_sock);
+
 }
 
 void* TimerThread(void* information)
@@ -539,6 +669,7 @@ void* CntThread(void* information)
                     }
                     usleep(report_period*100);
                 }
+
            }
         got_alpha=false;
         int error_cnt=0;

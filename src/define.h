@@ -50,9 +50,15 @@ pthread_mutex_t lockit;
 int shmid;
 key_t key=123456;
 char *shared_memory;
+
 int shmid_rl;
 key_t key_rl=12345;
 char *shared_memory_rl;
+
+int shmid_reward;
+key_t key_reward=54321;
+char *shared_memory_reward;
+
 int shmem_size=2048; //Shared Memory size: 2KBytes
 int key1=0;
 int key2=0;
@@ -219,6 +225,7 @@ void* DataThread(void*);
 void* CntThread(void*);
 void* TimerThread(void*);
 void* MonitorThread(void*);
+void* RemoteRewardThread(void*);
 
 //Print usage information
 void usage();

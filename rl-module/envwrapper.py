@@ -241,7 +241,7 @@ class TCP_Env_Wrapper(object):
             
 
             self.local_counter+=1
-            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
+            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}, {pacing_rate}, {loss_rate}, {packets_out}, {retrans_out}, {max_packets_out}")   
 
             if self.use_normalizer==True:
                 if evaluation!=True:
