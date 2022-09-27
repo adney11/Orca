@@ -35,6 +35,7 @@ import time
 import logging
 logging.basicConfig(filename='./orca_pensieve/logs/orca_pensieve_envwrapper.log', level=logging.DEBUG)
 myLOG = logging.getLogger(__name__)
+myLOG.setLevel(logging.ERROR)
 
 class Env_Wrapper(object):
     def __init__(self, name):
@@ -236,8 +237,8 @@ class TCP_Env_Wrapper(object):
         ari = abr_reward.find('\0')
         if ari != -1:
             abr_reward = abr_reward[:ari]
-            myLOG.debug(f"abr_reward recieved from shared memory before processing is: {abr_reward}")
             abr_reward = np.fromstring(abr_reward, dtype=float, sep=' ')
+            myLOG.debug(f"abr_reward recieved from shared memory after processing is: {abr_reward}")
         else:
             myLOG.error("abr_reward didn't have a null ending..")
         
@@ -322,10 +323,18 @@ class TCP_Env_Wrapper(object):
             else:
                 delay_metric=1
 
-            reward  = (thr_n_min-5*loss_rate_n_min)/self.max_bw*delay_metric
-
+            orca_reward  = (thr_n_min-5*loss_rate_n_min)/self.max_bw*delay_metric
+            reward = orca_reward
             # NOTE(ADNEY): add pensieve_reward here
-            myLOG.debug(f"Orca reward: {reward} : ABR reward: {abr_reward}")
+            if len(abr_reward) > 0:
+                abr_reward = abr_reward[0]
+                K = self.params.dict['remote_reward_k']
+                reward = K * orca_reward + (1-K) * abr_reward
+                myLOG.debug(f"Orca Reward : {orca_reward} : Abr Reward : {abr_reward} : Combined Reward : {reward}")
+            else:
+                abr_reward = 0                                     # NOTE(ADNEY), TODO: This should work - in case not, then this is where the issue will be
+                myLOG.debug(f"Orca reward: {reward} : ABR reward: {abr_reward} : Reward : {reward}")
+
             if self.max_bw!=0:
                 state[0]=thr_n_min/self.max_bw
                 tmp=pacing_rate_n_min/self.max_bw
@@ -341,10 +350,12 @@ class TCP_Env_Wrapper(object):
             state=np.append(state,[delta_t_n])
             state=np.append(state,[min_rtt_min/srtt_ms_min])
             state=np.append(state,[delay_metric])
-
+            state=np.append(state, [abr_reward])            # added this extra state in - for remote client reward
+            myLOG.debug(f"env.get_state: state : {state} : len(state) : {len(state)} : state.shape : {state.shape}")
             self.prev_rid = rid
             return state, d, reward, True
         else:
+            myLOG.debug(f"len(s0) : {len(s0)} != input_dim : {self.params.dict['input_dim']}")
             return state, 0.0, reward, False
 
     def map_action(self, action):

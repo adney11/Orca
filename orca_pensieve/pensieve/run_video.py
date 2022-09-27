@@ -139,7 +139,7 @@ try:
 	dp("stopped chrome driver")
 
 	# kill abr algorithm server
-	proc.send_signal(signal.SIGINT)
+	proc.send_signal(signal.SIGKILL)
 	# proc.kill()
 	
 	print('done')
@@ -155,7 +155,7 @@ except Exception as e:
 	except:
 		pass
 	try:
-		proc.send_signal(signal.SIGINT)
+		proc.send_signal(signal.SIGKILL)
 	except:
 		pass
 	

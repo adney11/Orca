@@ -41,7 +41,7 @@ echo "[$0]: slept, now calling actor stuff"
 $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo
 echo "[$0]: finished running $orca_binary" 
 #sudo killall -s15 python
-#sleep 10
+sleep 10
 echo "[$0]: Finished."
 if [ ${first_time} -eq 2 ] || [ ${first_time} -eq 4 ]
 then

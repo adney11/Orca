@@ -1,4 +1,5 @@
 {
+    "remote_reward_k": 0.5,
     "TARGET_MARGIN": 1,
     "device": "/cpu",
     "PER": false,

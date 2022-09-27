@@ -40,7 +40,7 @@ import pickle
 from utils import logger, Params, state_action_logger
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
-
+LOG = None
 
 def create_input_op_shape(obs, tensor):
     input_shape = [x or -1 for x in tensor.shape.as_list()]
@@ -166,8 +166,10 @@ def main():
 
     logfilename=f"{config.job_name}{config.task}"
     logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
+    global LOG
     LOG = logging.getLogger(__name__)
     ## parameters from file
+    LOG.debug(f"base path in config : {config.base_path}")
     params = Params(os.path.join(config.base_path,'params.json'))
 
 
@@ -221,6 +223,7 @@ def main():
 
 
     s_dim, a_dim = env_peek.get_dims_info()
+    LOG.debug(f"env_peek: s_dim : {s_dim} : a_dim : {a_dim}")
     action_scale, action_range = env_peek.get_action_info()
 
     if not params.dict['use_TCP']:
@@ -228,6 +231,7 @@ def main():
     if params.dict['recurrent']:
         s_dim = s_dim * params.dict['rec_dim']
 
+    LOG.debug(f"s_dim after checking use_TCP is : {s_dim}")
 
     if params.dict['use_hard_target'] == True:
         params.dict['tau'] = 1.0
@@ -283,8 +287,10 @@ def main():
                         shrmem_w = sysv_ipc.SharedMemory(config.mem_w)
                         shrmem_reward = sysv_ipc.SharedMemory(config.mem_reward)
                         env = TCP_Env_Wrapper(env_str, params, config=config, for_init_only=False, shrmem_r=shrmem_r, shrmem_w=shrmem_w, shrmem_reward=shrmem_reward, use_normalizer=params.dict['use_normalizer'])
+                        LOG.debug(f"Using TCP env for actor {i}")
                     else:
                         env = GYM_Env_Wrapper(env_str, params)
+                        LOG.debug(f"Using GYM env for actor {i}")
 
                     a_s0 = tf.placeholder(tf.float32, shape=[s_dim], name='a_s0')
                     a_action = tf.placeholder(tf.float32, shape=[a_dim], name='a_action')
@@ -388,6 +394,9 @@ def main():
                 s0 = env.reset()
                 s0_rec_buffer = np.zeros([s_dim])
                 s1_rec_buffer = np.zeros([s_dim])
+                LOG.debug(f"s0_rec_buffer: len : {len(s0_rec_buffer)} : shape : {s0_rec_buffer.shape}")
+                LOG.debug(f"s0 : {s0} : len : {len(s0)} : shape : {s0.shape} ")
+                LOG.debug(f"")
                 s0_rec_buffer[-1*params.dict['state_dim']:] = s0
 
 
