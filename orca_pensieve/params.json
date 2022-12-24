@@ -34,7 +34,7 @@
     "gamma": 0.995,
     "memsize": 2553600,
     "tb_interval": 1,
-    "ckptdir": null,
+    "ckptdir": "train_dir/learner0",
     "scheme": null,
     "num_actors": 1,
     "logdir": "train_dir",
