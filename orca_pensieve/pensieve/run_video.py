@@ -37,13 +37,13 @@ def timeout_handler(signum, frame):
 
 ip = sys.argv[1]
 port = sys.argv[2]
-run_time = 200
+run_time = 200                            # CHANGE THIS FOR LONGER RUNS
 process_id = sys.argv[3]
 logfilename = sys.argv[4]
 abr_algo = sys.argv[5] #"RL"
 sleep_time = random.randint(1,5)
 FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(filename=f'./orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
+logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
 LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
 	
