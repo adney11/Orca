@@ -1,3 +1,4 @@
+#!/bin/bash -x
 if [ $# -eq 4 ]
 then
     source setup.sh
@@ -6,15 +7,13 @@ then
     port_base=$2
 
     abr_algo=$3
-    trace_prefix="low3mbps"
-    trace_idx=$4
-    trace_postfix="-sec-mahimahi"
-    trace_name="$trace_prefix$trace_idx$trace_postfix"
+   
+    trace_name=$4
 
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
-    eval_duration=320
+    eval_duration=200
     num_actors=1
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_pensieve"
@@ -32,8 +31,8 @@ then
 
 
 
-    sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
-    sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
+    #sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
+    #sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
     sudo killall -s9 python orca-server-mahimahi-http
 
     epoch=20
@@ -44,40 +43,46 @@ then
 
         # If you are here: You are going to perform an evaluation over an emulated link
         num_actors=1
-        sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base_eval.json > "${dir}/params.json"
+        #sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
 
-        echo "[$0]: ./learner.sh  $dir $first_time  &"
-        #./learner.sh  $dir ${first_time} &
+        #echo "[$0]: ./learner.sh  $dir $first_time  &"
+        ./learner.sh  $dir ${first_time} &
         #echo "sleeping 20 seconds"
-        #sleep 20
+        sleep 20
         echo "[$0]: bringing up actor"
         #Bring up the actors:
+        #act_id=$(($RANDOM % 5))
+        #echo "act_id is: $act_id"
         act_id=0
         downl=$DOWNLINK_TRACE
         upl=$UPLINK_TRACE
         del=$DELAY
         qs=$QUEUE_SIZE
+        echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo &"
         ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo & # add abr_algo here
         pids="$pids $!"
-        act_id=$((act_id+1))
-        act_port=$((port_base+act_id))
+        #act_id=$((act_id+1))
+        #act_port=$((port_base+act_id))
         sleep 2
 
-        SECONDS=0
+        SECONDS=20
         for pid in $pids
         do
             echo "[$0]: waiting for $pid"
             wait $pid
         done
-        echo "[$0]: waited for $SECONDS seconds.."
         #Bring down the learner and actors ...
         #echo "sleeping for 315 seconds before killing actors and learner"
-        #sleep 315
+        sleep $SECONDS
+        echo "[$0]: waited for $SECONDS seconds.."
         echo "killing actors and learner"
         for i in `seq 0 $((num_actors))`
         do
-            sudo killall -s15 python
             sudo killall -s15 orca-server-mahimahi-http
+            sudo killall -s15 python
+            sudo killall chromedriver
+            sudo killall chrome
+            sudo killall Xvfb
         done
     else
     # If you are here: You are going to start/continue learning a better model!

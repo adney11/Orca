@@ -48,7 +48,7 @@ LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
 	
 # prevent multiple process from being synchronized
-#sleep(int(sleep_time))
+sleep(int(sleep_time))
 	
 # generate url
 url = 'http://' + ip + ':' + port + '/' + 'myindex_' + abr_algo + '.html'
@@ -107,7 +107,11 @@ try:
 	experimentalFlags = ['block-insecure-private-network-requests@2']
 	chromeLocalStatePrefs = {'browser.enabled_labs_experiments': experimentalFlags}	
 	options.add_experimental_option('localState', chromeLocalStatePrefs)
-	driver=webdriver.Chrome(chrome_driver, chrome_options=options)
+	try:
+		driver=webdriver.Chrome(chrome_driver, chrome_options=options)
+	except:
+		dp("failed to start driver - trying again")
+		driver=webdriver.Chrome(chrome_driver, chrome_options=options)
 	#chromeservice=Service(executable_path=chrome_driver)
 	#driver=webdriver.Chrome(service=chromeservice, options=options)
 	dp("chrome driver initialized...")
@@ -144,15 +148,15 @@ except Exception as e:
 	try: 
 		display.stop()
 	except:
-		pass
+		dp("tried to stop display but failed..")
 	try:
 		driver.quit()
 	except:
-		pass
+		dp("tried to quit driver but failed....")
 	try:
 		proc.send_signal(signal.SIGINT)
 	except:
-		pass
+		dp("tried to send signal to rl process but failed")
 	
 	LOG.error(e)
 

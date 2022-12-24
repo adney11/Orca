@@ -43,8 +43,8 @@ SUMMARY_DIR = './orca_pensieve/results'
 LOG_FILE = './orca_pensieve/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 # NN_MODEL = None
-NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_low-3mbps-hd.ckpt'
-REWARD_TYPE = 'hd'
+NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_fcc_linear.ckpt'
+REWARD_TYPE = 'linear'
 
 # video chunk sizes
 size_video1 = [2354772, 2123065, 2177073, 2160877, 2233056, 1941625, 2157535, 2290172, 2055469, 2169201, 2173522, 2102452, 2209463, 2275376, 2005399, 2152483, 2289689, 2059512, 2220726, 2156729, 2039773, 2176469, 2221506, 2044075, 2186790, 2105231, 2395588, 1972048, 2134614, 2164140, 2113193, 2147852, 2191074, 2286761, 2307787, 2143948, 1919781, 2147467, 2133870, 2146120, 2108491, 2184571, 2121928, 2219102, 2124950, 2246506, 1961140, 2155012, 1433658]
@@ -280,7 +280,7 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
 def main():
     if len(sys.argv) == 2:
         logfilename = sys.argv[1]
-        logging.basicConfig(filename=f'./logs/{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
+        logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/orca_pensieve-{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')

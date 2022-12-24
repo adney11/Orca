@@ -10,7 +10,6 @@ fi
 
 path=$1
 first_time=$2
-##
 echo "Bring up the learner:"
 if [ $first_time -eq 1 ]
 then

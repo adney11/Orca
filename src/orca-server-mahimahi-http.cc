@@ -188,17 +188,17 @@ void start_server(int flow_num, int client_port)
     if (first_time==4 || first_time==2)
     {
         DBGMARK(0,0, "first time == 4 or 2\n");
-        sprintf(cmd, "sudo -u `whoami`   mm-delay %d mm-link %s/../traces/%s %s/../traces/%s --downlink-log=%s/log/down-%s --uplink-queue=droptail --uplink-queue-args=\"packets=%d\" --downlink-queue=droptail --downlink-queue-args=\"packets=%d\" -- sh -c \'%s\' &",delay_ms,path,uplink,path,downlink,path,log_file,qsize,qsize,container_cmd);
+        sprintf(cmd, "sudo -u `whoami` mm-delay %d mm-link %s/../traces/%s %s/../traces/%s --downlink-log=%s/log/down-%s --uplink-queue=droptail --uplink-queue-args=\"packets=%d\" --downlink-queue=droptail --downlink-queue-args=\"packets=%d\" -- sh -c \'%s\' &",delay_ms,path,uplink,path,downlink,path,log_file,qsize,qsize,container_cmd);
         DBGMARK(0,0, "cmd is: %s\n", cmd);
     }
     else {
         DBGMARK(0,0, "inside else\n");
-        sprintf(cmd, "sudo -u `whoami`  mm-delay %d mm-link %s/../traces/%s %s/../traces/%s --uplink-queue=droptail --uplink-queue-args=\"packets=%d\" --downlink-queue=droptail --downlink-queue-args=\"packets=%d\" -- sh -c \'%s\' &",delay_ms,path,uplink,path,downlink,qsize,qsize,container_cmd);
+        sprintf(cmd, "sudo -u `whoami` mm-delay %d mm-link %s/../traces/%s %s/../traces/%s --uplink-queue=droptail --uplink-queue-args=\"packets=%d\" --downlink-queue=droptail --downlink-queue-args=\"packets=%d\" -- sh -c \'%s\' &",delay_ms,path,uplink,path,downlink,qsize,qsize,container_cmd);
         DBGMARK(0,0, "initalised cmd\n");
     }
     sprintf(final_cmd,"%s",cmd);
 
-    DBGPRINT(DBGSERVER,0,"final_cmd: %s\n",final_cmd);
+    
     info->trace=trace;
     info->num_lines=num_lines;
     /**
@@ -209,27 +209,28 @@ void start_server(int flow_num, int client_port)
     // Setup shared memory, 11 is the size
     if ((shmid = shmget(key, shmem_size, IPC_CREAT | 0666)) < 0)
     {
-        printf("Error getting shared memory id");
+        DBGERROR("Error getting shared memory id");
         return;
     }
         // Attached shared memory
     if ((shared_memory = (char*)shmat(shmid, NULL, 0)) == (char *) -1)
     {
-        printf("Error attaching shared memory id");
+        DBGERROR("Error attaching shared memory id");
         return;
     }
     // Setup shared memory, 11 is the size
     if ((shmid_rl = shmget(key_rl, shmem_size, IPC_CREAT | 0666)) < 0)
     {
-        printf("Error getting shared memory id");
+        DBGERROR("Error getting shared memory id");
         return;
     }
     // Attached shared memory
     if ((shared_memory_rl = (char*)shmat(shmid_rl, NULL, 0)) == (char *) -1)
     {
-        printf("Error attaching shared memory id");
+        DBGERROR("Error attaching shared memory id");
         return;
     } 
+    DBGPRINT(0,0, "Shared memory has been setup\n");
     if (first_time==1){
         sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
         DBGPRINT(0,0,"Starting RL Module (Without load) ...\n%s",cmd);
@@ -272,7 +273,8 @@ void start_server(int flow_num, int client_port)
            }
         }
         else{
-           usleep(10000);
+            DBGPRINT(0,0, "Didn't get alpha, trying again\n");
+            usleep(10000);
         }
         if (signal_check_counter>18000)
         {
@@ -290,6 +292,7 @@ void start_server(int flow_num, int client_port)
     //The maximum number of concurrent connections is 1
 	for(int i=0;i<FLOW_NUM;i++)
     {
+        DBGPRINT(0,0, "Listening for client connection\n");
         listen(sock[i],1);
         //To be used in select() function
         FD_SET(sock[i], &rset); 
@@ -298,7 +301,10 @@ void start_server(int flow_num, int client_port)
     }
 
     //Now its time to start the server-client app and tune C2TCP socket.
-    DBGPRINT(0,0, "Starting the container command\n")
+    DBGPRINT(0,0, "Starting the container command\n");
+
+
+    DBGPRINT(0,0,"final_cmd: %s\n",final_cmd);
     system(final_cmd);
 
     //Timeout {1Hour} if something goes wrong! (Maybe  mahimahi error...!)
@@ -328,7 +334,8 @@ void start_server(int flow_num, int client_port)
 	while(flow_index<flow_num)
 	{
         if (FD_ISSET(sock[flow_index], &rset)) 
-        {
+        {   
+            DBGPRINT(0,0,"calling accept\n");
             int value=accept(sock[flow_index],(struct sockaddr *)&client_addr[flow_index],(socklen_t*)&sin_size);
             if(value<0)
             {
@@ -695,6 +702,7 @@ void* DataThread(void* info)
             DBGMARK(0,0, "unimplemented logic for method: %s\n", request_line->method);
         }
     }
+    send_traffic = false;
     DBGMARK(0,0, "Recv While ended, with recv returning value: %d\n", len);
     DBGMARK(0,0,"socket is closed - ending data_thread\n");
 	return((void *)0);
