@@ -65,7 +65,7 @@ then
         #act_port=$((port_base+act_id))
         sleep 2
 
-        SECONDS=20
+        #SECONDS=20
         for pid in $pids
         do
             echo "[$0]: waiting for $pid"
@@ -73,8 +73,8 @@ then
         done
         #Bring down the learner and actors ...
         #echo "sleeping for 315 seconds before killing actors and learner"
-        sleep $SECONDS
-        echo "[$0]: waited for $SECONDS seconds.."
+        sleep 20
+        echo "[$0]: waited for 20 seconds.."
         echo "killing actors and learner"
         for i in `seq 0 $((num_actors))`
         do
