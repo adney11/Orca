@@ -13,7 +13,7 @@ then
     cur_dir=`pwd -P`
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
-    eval_duration=200
+    eval_duration=320
     num_actors=1
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_pensieve"

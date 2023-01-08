@@ -37,7 +37,7 @@ def timeout_handler(signum, frame):
 
 ip = sys.argv[1]
 port = sys.argv[2]
-run_time = 200                            # CHANGE THIS FOR LONGER RUNS
+run_time = 320                            # CHANGE THIS FOR LONGER RUNS
 process_id = sys.argv[3]
 logfilename = sys.argv[4]
 abr_algo = sys.argv[5] #"RL"
