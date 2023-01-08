@@ -43,7 +43,7 @@ SUMMARY_DIR = './orca_pensieve/results'
 LOG_FILE = './orca_pensieve/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 # NN_MODEL = None
-NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_fcc_linear.ckpt'
+NN_MODEL = '/newhome/Orca/orca_pensieve/pensieve/seperate_models/pensieve_below6mbps_linear_12200.ckpt'
 REWARD_TYPE = 'linear'
 
 # video chunk sizes
