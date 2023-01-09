@@ -1,0 +1,14 @@
+orca-cubic-below6mbps_test-1-mahimahi-wired6-10-20-30-RL
+Can't open /newhome/Orca/monitored_op/log/down-orca-cubic-below6mbps_test-1-mahimahi-wired6-10-20-30-RL: No such file or directory at /newhome/Orca/monitored_op/mm-thr line 42.
+Must have at least one event at /newhome/Orca/monitored_op/mm-thr line 150.
+------------------------------
+orca-cubic-below6mbps_test-1-mahimahi-wired6-10-20-30-RL
+Can't open /newhome/Orca/monitored_op/log/down-orca-cubic-below6mbps_test-1-mahimahi-wired6-10-20-30-RL: No such file or directory at /newhome/Orca/monitored_op/mm-thr line 42.
+Must have at least one event at /newhome/Orca/monitored_op/mm-thr line 150.
+------------------------------
+orca-cubic-below6mbps_test-1-mahimahi-wired6-10-20-30-RL
+Average capacity: 4.50 Mbits/s
+Average throughput: 0.44 Mbits/s (9.7% utilization)
+95th percentile per-packet queueing delay: 76 ms
+Average per packet delay: 21 ms
+------------------------------

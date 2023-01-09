@@ -1,0 +1,79 @@
+2023-01-09 14:34:49,530 - __main__ - DEBUG - starting run_video
+2023-01-09 14:34:52,534 - __main__ - DEBUG - url is: http://130.127.133.146:80/myindex_RL.html
+2023-01-09 14:34:52,534 - __main__ - DEBUG - copy over the chrome user dir...
+2023-01-09 14:34:52,628 - __main__ - DEBUG - start abr algorithm server...
+2023-01-09 14:34:52,628 - __main__ - DEBUG - rl server command is: exec /users/acardoza/venv/bin/python /newhome/Orca/monitored_op/pensieve/rl_server_no_training.py compmondebug
+2023-01-09 14:34:54,632 - __main__ - DEBUG - starting display...
+2023-01-09 14:34:54,640 - pyvirtualdisplay.abstractdisplay - DEBUG - command: ['Xvfb', '-br', '-nolisten', 'tcp', '-screen', '0', '800x600x24', '-displayfd', '7']
+2023-01-09 14:34:54,720 - pyvirtualdisplay.abstractdisplay - DEBUG - set $DISPLAY=:0
+2023-01-09 14:34:54,721 - __main__ - DEBUG - display started...
+2023-01-09 14:34:54,721 - __main__ - DEBUG - initialize chrome driver
+2023-01-09 14:34:55,731 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:50529/session {"desiredCapabilities": {"browserName": "chrome", "version": "", "platform": "ANY", "javascriptEnabled": true, "chromeOptions": {"localState": {"browser.enabled_labs_experiments": ["block-insecure-private-network-requests@2"]}, "extensions": [], "args": ["--no-sandbox", "--headless", "--user-data-dir=/tmp/chrome_user_dir_id_0", "--ignore-certificate-errors", "--disable-web-security", "--disable-gpu", "--disable-software-rasterizer", "--autoplay-policy=no-user-gesture-required", "--dns-prefetch-disable"]}}, "requiredCapabilities": {}}
+2023-01-09 14:34:56,142 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:34:56,143 - __main__ - DEBUG - chrome driver initialized...
+2023-01-09 14:34:56,143 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:50529/session/41773723cf5dbe62c4b14bb1f2242527/timeouts {"ms": 10000.0, "type": "page load", "sessionId": "41773723cf5dbe62c4b14bb1f2242527"}
+2023-01-09 14:34:56,144 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:34:56,144 - __main__ - DEBUG - page parameters set
+2023-01-09 14:37:13,746 - __main__ - DEBUG - starting run_video
+2023-01-09 14:37:14,747 - __main__ - DEBUG - url is: http://130.127.133.146:80/myindex_RL.html
+2023-01-09 14:37:14,748 - __main__ - DEBUG - copy over the chrome user dir...
+2023-01-09 14:37:14,842 - __main__ - DEBUG - start abr algorithm server...
+2023-01-09 14:37:14,843 - __main__ - DEBUG - rl server command is: exec /users/acardoza/venv/bin/python /newhome/Orca/monitored_op/pensieve/rl_server_no_training.py compmondebug
+2023-01-09 14:37:16,847 - __main__ - DEBUG - starting display...
+2023-01-09 14:37:16,853 - pyvirtualdisplay.abstractdisplay - DEBUG - command: ['Xvfb', '-br', '-nolisten', 'tcp', '-screen', '0', '800x600x24', '-displayfd', '7']
+2023-01-09 14:37:16,933 - pyvirtualdisplay.abstractdisplay - DEBUG - set $DISPLAY=:0
+2023-01-09 14:37:16,934 - __main__ - DEBUG - display started...
+2023-01-09 14:37:16,934 - __main__ - DEBUG - initialize chrome driver
+2023-01-09 14:37:17,942 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:55123/session {"desiredCapabilities": {"browserName": "chrome", "version": "", "platform": "ANY", "javascriptEnabled": true, "chromeOptions": {"localState": {"browser.enabled_labs_experiments": ["block-insecure-private-network-requests@2"]}, "extensions": [], "args": ["--no-sandbox", "--headless", "--user-data-dir=/tmp/chrome_user_dir_id_0", "--ignore-certificate-errors", "--disable-web-security", "--disable-gpu", "--disable-software-rasterizer", "--autoplay-policy=no-user-gesture-required", "--dns-prefetch-disable"]}}, "requiredCapabilities": {}}
+2023-01-09 14:37:18,315 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:37:18,315 - __main__ - DEBUG - chrome driver initialized...
+2023-01-09 14:37:18,316 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:55123/session/d9a3b6fd806c20e554e68a2e066c4e3f/timeouts {"ms": 10000.0, "type": "page load", "sessionId": "d9a3b6fd806c20e554e68a2e066c4e3f"}
+2023-01-09 14:37:18,317 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:37:18,317 - __main__ - DEBUG - page parameters set
+2023-01-09 14:37:28,328 - __main__ - DEBUG - getting url after sleeping 10 seconds
+2023-01-09 14:37:28,328 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:55123/session/d9a3b6fd806c20e554e68a2e066c4e3f/url {"url": "http://130.127.133.146:80/myindex_RL.html", "sessionId": "d9a3b6fd806c20e554e68a2e066c4e3f"}
+2023-01-09 14:37:28,565 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:37:28,565 - __main__ - DEBUG - got url
+2023-01-09 14:37:28,565 - __main__ - DEBUG - sleeping for 320 seconds
+2023-01-09 14:39:17,367 - __main__ - DEBUG - starting run_video
+2023-01-09 14:39:20,370 - __main__ - DEBUG - url is: http://130.127.133.146:80/myindex_RL.html
+2023-01-09 14:39:20,371 - __main__ - DEBUG - copy over the chrome user dir...
+2023-01-09 14:39:20,465 - __main__ - DEBUG - start abr algorithm server...
+2023-01-09 14:39:20,465 - __main__ - DEBUG - rl server command is: exec /users/acardoza/venv/bin/python /newhome/Orca/monitored_op/pensieve/rl_server_no_training.py compmondebug
+2023-01-09 14:39:22,469 - __main__ - DEBUG - starting display...
+2023-01-09 14:39:22,477 - pyvirtualdisplay.abstractdisplay - DEBUG - command: ['Xvfb', '-br', '-nolisten', 'tcp', '-screen', '0', '800x600x24', '-displayfd', '7']
+2023-01-09 14:39:22,556 - pyvirtualdisplay.abstractdisplay - DEBUG - set $DISPLAY=:0
+2023-01-09 14:39:22,557 - __main__ - DEBUG - display started...
+2023-01-09 14:39:22,557 - __main__ - DEBUG - initialize chrome driver
+2023-01-09 14:39:23,566 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:57473/session {"desiredCapabilities": {"browserName": "chrome", "version": "", "platform": "ANY", "javascriptEnabled": true, "chromeOptions": {"localState": {"browser.enabled_labs_experiments": ["block-insecure-private-network-requests@2"]}, "extensions": [], "args": ["--no-sandbox", "--headless", "--user-data-dir=/tmp/chrome_user_dir_id_0", "--ignore-certificate-errors", "--disable-web-security", "--disable-gpu", "--disable-software-rasterizer", "--autoplay-policy=no-user-gesture-required", "--dns-prefetch-disable"]}}, "requiredCapabilities": {}}
+2023-01-09 14:39:23,950 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:39:23,951 - __main__ - DEBUG - chrome driver initialized...
+2023-01-09 14:39:23,951 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:57473/session/245e4b66a2c39dc65536147e427f23b5/timeouts {"ms": 10000.0, "type": "page load", "sessionId": "245e4b66a2c39dc65536147e427f23b5"}
+2023-01-09 14:39:23,953 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:39:23,953 - __main__ - DEBUG - page parameters set
+2023-01-09 14:39:33,963 - __main__ - DEBUG - getting url after sleeping 10 seconds
+2023-01-09 14:39:33,963 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:57473/session/245e4b66a2c39dc65536147e427f23b5/url {"url": "http://130.127.133.146:80/myindex_RL.html", "sessionId": "245e4b66a2c39dc65536147e427f23b5"}
+2023-01-09 14:39:34,211 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:39:34,211 - __main__ - DEBUG - got url
+2023-01-09 14:39:34,211 - __main__ - DEBUG - sleeping for 320 seconds
+2023-01-09 14:44:17,962 - __main__ - DEBUG - starting run_video
+2023-01-09 14:44:21,966 - __main__ - DEBUG - url is: http://130.127.133.146:80/myindex_RL.html
+2023-01-09 14:44:21,967 - __main__ - DEBUG - copy over the chrome user dir...
+2023-01-09 14:44:22,055 - __main__ - DEBUG - start abr algorithm server...
+2023-01-09 14:44:22,056 - __main__ - DEBUG - rl server command is: exec /users/acardoza/venv/bin/python /newhome/Orca/monitored_op/pensieve/rl_server_no_training.py compmondebug
+2023-01-09 14:44:24,060 - __main__ - DEBUG - starting display...
+2023-01-09 14:44:24,067 - pyvirtualdisplay.abstractdisplay - DEBUG - command: ['Xvfb', '-br', '-nolisten', 'tcp', '-screen', '0', '800x600x24', '-displayfd', '7']
+2023-01-09 14:44:24,140 - pyvirtualdisplay.abstractdisplay - DEBUG - set $DISPLAY=:0
+2023-01-09 14:44:24,141 - __main__ - DEBUG - display started...
+2023-01-09 14:44:24,141 - __main__ - DEBUG - initialize chrome driver
+2023-01-09 14:44:25,150 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:36621/session {"desiredCapabilities": {"browserName": "chrome", "version": "", "platform": "ANY", "javascriptEnabled": true, "chromeOptions": {"localState": {"browser.enabled_labs_experiments": ["block-insecure-private-network-requests@2"]}, "extensions": [], "args": ["--no-sandbox", "--headless", "--user-data-dir=/tmp/chrome_user_dir_id_0", "--ignore-certificate-errors", "--disable-web-security", "--disable-gpu", "--disable-software-rasterizer", "--autoplay-policy=no-user-gesture-required", "--dns-prefetch-disable"]}}, "requiredCapabilities": {}}
+2023-01-09 14:44:25,512 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:44:25,512 - __main__ - DEBUG - chrome driver initialized...
+2023-01-09 14:44:25,513 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:36621/session/e11ccd58d586f298d6dfee4602df82dc/timeouts {"ms": 10000.0, "type": "page load", "sessionId": "e11ccd58d586f298d6dfee4602df82dc"}
+2023-01-09 14:44:25,514 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:44:25,514 - __main__ - DEBUG - page parameters set
+2023-01-09 14:44:35,525 - __main__ - DEBUG - getting url after sleeping 10 seconds
+2023-01-09 14:44:35,525 - selenium.webdriver.remote.remote_connection - DEBUG - POST http://127.0.0.1:36621/session/e11ccd58d586f298d6dfee4602df82dc/url {"url": "http://130.127.133.146:80/myindex_RL.html", "sessionId": "e11ccd58d586f298d6dfee4602df82dc"}
+2023-01-09 14:44:35,765 - selenium.webdriver.remote.remote_connection - DEBUG - Finished Request
+2023-01-09 14:44:35,766 - __main__ - DEBUG - got url
+2023-01-09 14:44:35,766 - __main__ - DEBUG - sleeping for 320 seconds
