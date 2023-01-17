@@ -33,7 +33,7 @@ from time import sleep
 import time
 
 import logging
-logging.basicConfig(filename='./orca_pensieve/logs/orca_pensieve_envwrapper.log', level=logging.DEBUG)
+logging.basicConfig(filename='/newhome/Orca/monitored_op/logs/orca_pensieve_envwrapper.log', level=logging.DEBUG)
 myLOG = logging.getLogger(__name__)
 
 class Env_Wrapper(object):

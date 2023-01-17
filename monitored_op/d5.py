@@ -40,6 +40,10 @@ import pickle
 from utils import logger, Params, state_action_logger
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
+import grpc
+import compmon_pb2, compmon_pb2_grpc
+COMPMON_ADDRESS = "130.127.133.146"
+COMPMON_PORT = "31337"
 
 
 def create_input_op_shape(obs, tensor):
@@ -164,7 +168,7 @@ def main():
     config = parser.parse_args()
 
     logfilename=f"{config.job_name}{config.task}"
-    logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
+    logging.basicConfig(filename=f'/newhome/Orca/monitored_op/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
     LOG = logging.getLogger(__name__)
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))
@@ -388,6 +392,9 @@ def main():
                 s1_rec_buffer = np.zeros([s_dim])
                 s0_rec_buffer[-1*params.dict['state_dim']:] = s0
 
+                rpc_channel = grpc.insecure_channel(f"{COMPMON_ADDRESS}:{COMPMON_PORT}")
+                rpc_stub = compmon_pb2_grpc.CompMonStub(rpc_channel)
+                
 
                 if params.dict['recurrent']:
                     a = agent.get_action(s0_rec_buffer,not config.eval)
@@ -406,19 +413,37 @@ def main():
                     s1, r, terminal, error_code = env.step(a,eval_=config.eval)
                     # LOG action and new state TODO(ADNEY)
                     #state_action_logger.info(f"epoch: {epoch}\naction: {a}\ngave state: {s1}\nwhere samples/cwnd is at index 3")
-
+                    state_used = s0_rec_buffer
+                    if params.dict['recurrent']:
+                        state_used = s0_rec_buffer
+                    else:
+                        state_used = s0
+                    LOG.debug(f"COMPMON: DEBUG: shape of state_used: {state_used.shape}")
+                    # NOTE(ADNEY): send state_used, a1, and r to compmon using report RPC
+                    compmon_report = compmon_pb2.SARReport(
+                        report_id= epoch-1,
+                        input_states = state_used,
+                        action_taken = a,
+                        reward_recieved = r
+                    )
+                    compmon_response = rpc_stub.Report(compmon_report)
+                    LOG.info(f"compmon_response.reply: {compmon_response.reply}")
+                    
                     if error_code == True:
                         s1_rec_buffer = np.concatenate( (s0_rec_buffer[params.dict['state_dim']:], s1) )
-
+                        
                         if params.dict['recurrent']:
                             a1 = agent.get_action(s1_rec_buffer, not config.eval)
+                            
                         else:
                             a1 = agent.get_action(s1,not config.eval)
 
                         a1 = a1[0][0]
 
-
                         env.write_action(a1)
+                        
+                        
+                        
 
                     else:
                         print("TaskID:"+str(config.task)+"Invalid state received...\n")

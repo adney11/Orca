@@ -22,6 +22,12 @@ LOG = None
 #logging.basicConfig(filename='logs/rl_server_no_training.log', level=logging.DEBUG)
 #LOG = logging.getLogger(__name__)
 
+import grpc
+sys.path.append('../myrpc')
+import compmon_pb2, compmon_pb2_grpc
+
+
+
 S_INFO = 6  # bit_rate, buffer_size, rebuffering_time, bandwidth_measurement, chunk_til_video_end
 S_LEN = 8  # take how many frames in the past
 A_DIM = 6
@@ -197,7 +203,13 @@ def make_request_handler(input_dict):
                 self.wfile.write(send_data.encode())
 
                 # record [state, action, reward]
-                # put it here after training, notice there is a shift in reward storage
+                # put it here after training, notice there is a shift in reward storage 
+                # NOTE(ADNEY): pensieve uses a batch of states - for now, let's report only the most recent recieved state
+                most_recent_state = [] 
+                for i in range(S_INFO):
+                    most_recent_state.append(state[i, -1])
+                    
+                # NOTE(ADNEY): send out most_recent_state, bitrate(action), reward to compmon using Report RPC
 
                 if end_of_video:
                     self.s_batch = [np.zeros((S_INFO, S_LEN))]
