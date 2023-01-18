@@ -33,7 +33,7 @@ def configure_logging(path_to_log_directory):
         os.makedirs(path_to_log_directory)
     handler = logging.FileHandler(filename=os.path.join(path_to_log_directory, "result.log"))
 
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     handler.setFormatter(formatter)
