@@ -22,6 +22,8 @@ SOFTWARE.
 
 import threading
 import logging
+logging.basicConfig(filename="/newhome/Orca/monitored_op/logs/d5.log", level=logging.DEBUG)
+d5logger = logging.getLogger(__name__)
 import tensorflow as tf
 import sys
 from agent import Agent
@@ -44,6 +46,7 @@ import grpc
 import compmon_pb2, compmon_pb2_grpc
 COMPMON_ADDRESS = "130.127.133.146"
 COMPMON_PORT = "31337"
+COMPMON_COMPONENT_NAME = 'orca'
 
 
 def create_input_op_shape(obs, tensor):
@@ -160,6 +163,7 @@ def main():
     parser.add_argument('--base_path',type=str, required=True)
     parser.add_argument('--job_name', type=str, choices=['learner', 'actor'], required=True, help='Job name: either {\'learner\', actor}')
     parser.add_argument('--task', type=int, required=True, help='Task id')
+    parser.add_argument('--trace_name', type=str, default= "debug_trace")
 
 
     ## parameters from parser
@@ -167,9 +171,9 @@ def main():
     global params
     config = parser.parse_args()
 
-    logfilename=f"{config.job_name}{config.task}"
-    logging.basicConfig(filename=f'/newhome/Orca/monitored_op/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
-    LOG = logging.getLogger(__name__)
+    # logfilename=f"{config.job_name}{config.task}"
+    # logging.basicConfig(filename=f'/newhome/Orca/monitored_op/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
+    #LOG = logging.getLogger(__name__)
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))
 
@@ -251,7 +255,7 @@ def main():
         if not os.path.exists(tfeventdir):
             os.makedirs(tfeventdir)
         summary_writer = tf.summary.FileWriterCache.get(tfeventdir)
-        LOG.debug(f"tfeventdir/summary location: {tfeventdir}")
+        d5logger.debug(f"tfeventdir/summary location: {tfeventdir}")
 
         with tf.device(shared_job_device):
 
@@ -298,6 +302,8 @@ def main():
 
                     with tf.device(shared_job_device):
                         actor_op.append(queue.enqueue(a_buf))
+                    d5logger.debug(f"added actor {i}")
+                    print(f"#### ADDED ACTOR {i}")
 
         if is_learner:
             Dequeue_Length = params.dict['dequeue_length']
@@ -384,18 +390,37 @@ def main():
 
 
         else:
+                print(f"I AM ACTOR d5")
+                d5logger.debug(f"ACTOR D5 is running")
                 start = time.time()
                 step_counter = np.int64(0)
                 eval_step_counter = np.int64(0)
+                d5logger.debug("before env.reset")
                 s0 = env.reset()
+                d5logger.debug("after env.reset")
                 s0_rec_buffer = np.zeros([s_dim])
                 s1_rec_buffer = np.zeros([s_dim])
                 s0_rec_buffer[-1*params.dict['state_dim']:] = s0
 
-                rpc_channel = grpc.insecure_channel(f"{COMPMON_ADDRESS}:{COMPMON_PORT}")
-                rpc_stub = compmon_pb2_grpc.CompMonStub(rpc_channel)
+    
+                server_address = f"{COMPMON_ADDRESS}:{COMPMON_PORT}"
+                print(f"before: {server_address}")
+                d5logger.debug(f"before: {server_address}")
+                rpc_channel = grpc.insecure_channel(server_address)
                 
-
+                rpc_stub = compmon_pb2_grpc.CompMonStub(rpc_channel)
+                print(f"after: {server_address}")
+                d5logger.debug(f"after: {server_address}")
+                # send register message here
+                compmon_register_msg = compmon_pb2.RegisterMessage(
+                    is_main_comp = False,
+                    component_name = COMPMON_COMPONENT_NAME,
+                    history_length = params.dict['rec_dim'],
+                    trace_name = config.trace_name
+                )
+                compmon_response = rpc_stub.Register(compmon_register_msg)
+                d5logger.debug(f"COMPMON: got response for register call: {compmon_response.reply}")
+                
                 if params.dict['recurrent']:
                     a = agent.get_action(s0_rec_buffer,not config.eval)
                 else:
@@ -411,6 +436,7 @@ def main():
 
                     step_counter += 1
                     s1, r, terminal, error_code = env.step(a,eval_=config.eval)
+                    d5logger.debug(f"env.step  - returned state {s1} with shape {s1.shape}")
                     # LOG action and new state TODO(ADNEY)
                     #state_action_logger.info(f"epoch: {epoch}\naction: {a}\ngave state: {s1}\nwhere samples/cwnd is at index 3")
                     state_used = s0_rec_buffer
@@ -418,16 +444,18 @@ def main():
                         state_used = s0_rec_buffer
                     else:
                         state_used = s0
-                    LOG.debug(f"COMPMON: DEBUG: shape of state_used: {state_used.shape}")
+                    logging.debug(f"COMPMON: DEBUG: shape of state_used: {state_used.shape}")
                     # NOTE(ADNEY): send state_used, a1, and r to compmon using report RPC
                     compmon_report = compmon_pb2.SARReport(
-                        report_id= epoch-1,
+                        component_name = COMPMON_COMPONENT_NAME,
                         input_states = state_used,
                         action_taken = a,
-                        reward_recieved = r
+                        reward_recieved = r,
+                        wall_time = start,
+                        report_id= epoch-1,
                     )
                     compmon_response = rpc_stub.Report(compmon_report)
-                    LOG.info(f"compmon_response.reply: {compmon_response.reply}")
+                    logging.info(f"report: compmon_response.reply: {compmon_response.reply}")
                     
                     if error_code == True:
                         s1_rec_buffer = np.concatenate( (s0_rec_buffer[params.dict['state_dim']:], s1) )

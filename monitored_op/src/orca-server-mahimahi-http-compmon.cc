@@ -168,9 +168,9 @@ void start_server(int flow_num, int client_port)
     DBGMARK(0,0, "initialized container cmd variable\n");
     char python_binary[] = "/users/acardoza/venv/bin/python";
     DBGMARK(0,0, "python binary is: %s\n", python_binary);
-    char client_script[] = "/newhome/Orca/orca_pensieve/pensieve/run_video.py";
+    char client_script[] = "/newhome/Orca/monitored_op/pensieve/run_video.py";
     DBGMARK(0,0, "client_script is: %s\n", client_script);
-    char container_cmd_format_str[] = "sudo -u `whoami` %s %s %s %d %d %s %s";
+    char container_cmd_format_str[] = "sudo -u `whoami` %s %s %s %d %d %s %s %s";
     DBGMARK(0,0, "container_cmd_format_str: %s\n", container_cmd_format_str);
     char ip[] = "$MAHIMAHI_BASE";
     DBGMARK(0,0, "ip is: %s\n", ip);
@@ -178,7 +178,8 @@ void start_server(int flow_num, int client_port)
     DBGMARK(0,0, "actor_id: %d\n",actor_id);
     DBGMARK(0,0, "log_file: %s\n",log_file);
     DBGMARK(0,0, "abr_algo: %s\n",abr_algo);
-    sprintf(container_cmd, container_cmd_format_str, python_binary, client_script, ip, client_port, actor_id, log_file, abr_algo);
+    DBGMARK(0,0, "trace_name: %s\n", downlink);
+    sprintf(container_cmd, container_cmd_format_str, python_binary, client_script, ip, client_port, actor_id, log_file, abr_algo, downlink);
     DBGMARK(0,0, "container_cmd: %s\n", container_cmd);
     char cmd[1000];
     DBGMARK(0,0, "initalised cmd\n");
@@ -232,16 +233,16 @@ void start_server(int flow_num, int client_port)
     } 
     DBGPRINT(0,0, "Shared memory has been setup\n");
     if (first_time==1){
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s --mem_r=%d --mem_w=%d --trace_name=%s &",path,path,actor_id,path,(int)key,(int)key_rl, downlink);
         DBGPRINT(0,0,"Starting RL Module (Without load) ...\n%s",cmd);
     }
     else if (first_time==2 || first_time==4){
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --tb_interval=1 --base_path=%s --load --eval --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d --trace_name=%s &",path,path,actor_id,path,(int)key,(int)key_rl, downlink);
         DBGPRINT(0,0,"Starting RL Module (No learning) ...\n%s",cmd);
     }
     else
     {
-        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d &",path,path,actor_id,path,(int)key,(int)key_rl);
+        sprintf(cmd,"/users/`whoami`/venv/bin/python %s/d5.py --load --tb_interval=1 --base_path=%s --task=%d --job_name=actor --train_dir=%s  --mem_r=%d --mem_w=%d --trace_name=%s &",path,path,actor_id,path,(int)key,(int)key_rl, downlink);
         DBGPRINT(0,0,"Starting RL Module (With load) ...\n%s",cmd);
     }
     
@@ -303,22 +304,22 @@ void start_server(int flow_num, int client_port)
 
     // NOTE(ADNEY): connect to compmon here before starting client - this will essentially have lower level connect to compMon first
 
-    int compmon_sockfd;
-    struct sockaddr_in compmon_server;
-    char compmon_register_msg[] = "Hey! I am your CC component!";
+    // int compmon_sockfd;
+    // struct sockaddr_in compmon_server;
+    // char compmon_register_msg[] = "Hey! I am your CC component!";
 
-    if ((compmon_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-    {
-        DBGPRINT(0,0, "couldn't make compmon socket\n");
-        return;
-    }
-    memset(&compmon_server, 0, sizeof(compmon_server));
+    // if ((compmon_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    // {
+    //     DBGPRINT(0,0, "couldn't make compmon socket\n");
+    //     return;
+    // }
+    // memset(&compmon_server, 0, sizeof(compmon_server));
 
-    compmon_server.sin_family = AF_INET; 
-    compmon_server.sin_port = htons(31337);   // TODO - make this an argument
-    compmon_server.sin_addr.s_addr = inet_addr("130.127.133.146");  // TODO - change this to argument later
+    // compmon_server.sin_family = AF_INET; 
+    // compmon_server.sin_port = htons(31337);   // TODO - make this an argument
+    // compmon_server.sin_addr.s_addr = inet_addr("130.127.133.146");  // TODO - change this to argument later
 
-    sendto(compmon_sockfd, compmon_register_msg, strlen(compmon_register_msg), 0, (sockaddr*)&compmon_server, sizeof(compmon_server));
+    // sendto(compmon_sockfd, compmon_register_msg, strlen(compmon_register_msg), 0, (sockaddr*)&compmon_server, sizeof(compmon_server));
 
     //Now its time to start the server-client app and tune C2TCP socket.
     DBGPRINT(0,0, "Starting the container command\n");

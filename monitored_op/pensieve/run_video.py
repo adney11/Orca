@@ -41,6 +41,7 @@ run_time = 320                            # CHANGE THIS FOR LONGER RUNS
 process_id = sys.argv[3]
 logfilename = sys.argv[4]
 abr_algo = sys.argv[5] #"RL"
+trace_name = sys.argv[6]
 sleep_time = random.randint(1,5)
 FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(filename=f'/newhome/Orca/monitored_op/logs/monitored_op-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
@@ -73,7 +74,7 @@ try:
 	rl_server_dir = "/newhome/Orca/monitored_op/pensieve"
 	
 	if abr_algo == 'RL':
-		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/rl_server_no_training.py ' + logfilename
+		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/rl_server_no_training.py ' + logfilename + ' ' + trace_name
 	elif abr_algo == 'fastMPC':
 		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/mpc_server.py ' + logfilename
 	elif abr_algo == 'robustMPC':

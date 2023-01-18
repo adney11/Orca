@@ -33,7 +33,7 @@ from time import sleep
 import time
 
 import logging
-logging.basicConfig(filename='/newhome/Orca/monitored_op/logs/orca_pensieve_envwrapper.log', level=logging.DEBUG)
+#logging.basicConfig(filename='/newhome/Orca/monitored_op/logs/monitored_op_envwrapper.log', level=logging.DEBUG)
 myLOG = logging.getLogger(__name__)
 
 class Env_Wrapper(object):
@@ -242,7 +242,7 @@ class TCP_Env_Wrapper(object):
             self.local_counter+=1
 
             #myLOG.debug(f"local_count: {self.local_counter} rid: {rid} cwnd: {cwnd} thr: {thr}")
-            myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
+            #myLOG.debug(f"{time.time()}, {self.local_counter}, {self.prev_rid}, {rid}, {cwnd}, {thr}")   
             if self.use_normalizer==True:
                 if evaluation!=True:
                     self.normalizer.observe(s0)

@@ -7,6 +7,7 @@ import urllib
 import sys
 import os
 import json
+import signal
 
 os.environ['CUDA_VISIBLE_DEVICES']=''
 
@@ -54,6 +55,11 @@ LOG_FILE = './monitored_op/results/log'
 NN_MODEL = '/newhome/Orca/monitored_op/pensieve/seperate_models/pensieve_fcc_linear.ckpt'
 REWARD_TYPE = 'linear'
 
+COMPMON_ADDRESS = "130.127.133.146"
+COMPMON_PORT = "31337"
+COMPMON_COMPONENT_NAME = 'pensieve'
+
+
 # video chunk sizes
 size_video1 = [2354772, 2123065, 2177073, 2160877, 2233056, 1941625, 2157535, 2290172, 2055469, 2169201, 2173522, 2102452, 2209463, 2275376, 2005399, 2152483, 2289689, 2059512, 2220726, 2156729, 2039773, 2176469, 2221506, 2044075, 2186790, 2105231, 2395588, 1972048, 2134614, 2164140, 2113193, 2147852, 2191074, 2286761, 2307787, 2143948, 1919781, 2147467, 2133870, 2146120, 2108491, 2184571, 2121928, 2219102, 2124950, 2246506, 1961140, 2155012, 1433658]
 size_video2 = [1728879, 1431809, 1300868, 1520281, 1472558, 1224260, 1388403, 1638769, 1348011, 1429765, 1354548, 1519951, 1422919, 1578343, 1231445, 1471065, 1491626, 1358801, 1537156, 1336050, 1415116, 1468126, 1505760, 1323990, 1383735, 1480464, 1547572, 1141971, 1498470, 1561263, 1341201, 1497683, 1358081, 1587293, 1492672, 1439896, 1139291, 1499009, 1427478, 1402287, 1339500, 1527299, 1343002, 1587250, 1464921, 1483527, 1231456, 1364537, 889412]
@@ -83,6 +89,11 @@ def make_request_handler(input_dict):
             self.s_batch = input_dict['s_batch']
             self.a_batch = input_dict['a_batch']
             self.r_batch = input_dict['r_batch']
+            self.trace_name = input_dict['trace_name']
+            self.rpc_stub = input_dict['rpc_stub']
+            self.rpc_reports_sent = input_dict['rpc_reports_sent']
+    
+            # setup signal handler to send save message before exiting
             BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
         def do_POST(self):
@@ -168,7 +179,8 @@ def make_request_handler(input_dict):
                         state = np.array(self.s_batch[-1], copy=True)
 
                 # log wall_time, bit_rate, buffer_size, rebuffer_time, video_chunk_size, download_time, reward
-                self.log_file.write(str(time.time()) + '\t' +
+                log_wall_time = time.time()
+                self.log_file.write(str(log_wall_time) + '\t' +
                                     str(VIDEO_BIT_RATE[post_data['lastquality']]) + '\t' +
                                     str(post_data['buffer']) + '\t' +
                                     str(rebuffer_time / M_IN_K) + '\t' +
@@ -210,9 +222,23 @@ def make_request_handler(input_dict):
                     most_recent_state.append(state[i, -1])
                     
                 # NOTE(ADNEY): send out most_recent_state, bitrate(action), reward to compmon using Report RPC
+                LOG.info(f"sending compmon report {self.rpc_reports_sent}")
+                compmon_report = compmon_pb2.SARReport(
+                    component_name = COMPMON_COMPONENT_NAME,
+                    input_states = most_recent_state,
+                    action_taken = bit_rate,
+                    reward_recieved = reward,
+                    wall_time = log_wall_time,
+                    report_id = self.rpc_reports_sent
+                )
+                compmon_response = self.rpc_stub.Report(compmon_report)
+                LOG.info(f"Compmon Report Reply: {compmon_response.reply}")
+                self.input_dict['rpc_reports_sent'] += 1
 
                 if end_of_video:
                     self.s_batch = [np.zeros((S_INFO, S_LEN))]
+                    compmon_response = self.rpc_stub.Finish(compmon_pb2.FinishMessage(component_name=COMPMON_COMPONENT_NAME))
+                    LOG.info(f"Finish Response: {compmon_response.reply}")
                 else:
                     self.s_batch.append(state)
 
@@ -231,7 +257,10 @@ def make_request_handler(input_dict):
     return Request_Handler
 
 
-def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
+def sigterm_handler(sig, frame):
+    pass
+
+def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE, trace_name="default_trace"):
 
     np.random.seed(RANDOM_SEED)
 
@@ -242,13 +271,13 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         
         
     # connect to compmon here
-    compmon_socket = socket(AF_INET, SOCK_DGRAM)
-    compmon_ip = "130.127.133.146"
-    compmon_port = 31337
-    compmon_addr = (compmon_ip, compmon_port)
-    compmon_register_msg = "Hey! I am the ABR component"
+    # compmon_socket = socket(AF_INET, SOCK_DGRAM)
+    # compmon_ip = "130.127.133.146"
+    # compmon_port = 31337
+    # compmon_addr = (compmon_ip, compmon_port)
+    # compmon_register_msg = "Hey! I am the ABR component"
     
-    compmon_socket.sendto(compmon_register_msg.encode(), compmon_addr)
+    # compmon_socket.sendto(compmon_register_msg.encode(), compmon_addr)
     
     # TODO: provide this compmon socket forward - so can send all actions
 
@@ -285,14 +314,34 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         # we compute the difference to get
 
         video_chunk_count = 0
+        
+        rpc_channel = grpc.insecure_channel(f"{COMPMON_ADDRESS}:{COMPMON_PORT}")
+        rpc_stub = compmon_pb2_grpc.CompMonStub(rpc_channel)
+        rpc_reports_sent = 0
 
+        # attach gRPC stub here
+        # send register message here
+            
+        compmon_register_msg = compmon_pb2.RegisterMessage(
+            is_main_comp = True,
+            component_name = COMPMON_COMPONENT_NAME,
+            history_length = S_LEN,
+            trace_name = trace_name
+        )
+        LOG.info(f"sending register message to compmon: {compmon_register_msg}")
+        compmon_response = rpc_stub.Register(compmon_register_msg)
+        LOG.info(f"Reply recieved for register message: {compmon_response.reply}")
+        
+        signal.signal(signal.SIGTERM, sigterm_handler)
+        
         input_dict = {'sess': sess, 'log_file': log_file,
                       'actor': actor, 'critic': critic,
                       'saver': saver, 'train_counter': train_counter,
                       'last_bit_rate': last_bit_rate,
                       'last_total_rebuf': last_total_rebuf,
                       'video_chunk_coount': video_chunk_count,
-                      's_batch': s_batch, 'a_batch': a_batch, 'r_batch': r_batch}
+                      's_batch': s_batch, 'a_batch': a_batch, 'r_batch': r_batch,
+                      'trace_name':trace_name, 'rpc_stub': rpc_stub, 'rpc_reports_sent': rpc_reports_sent}
 
         # interface to abr_rl server
         handler_class = make_request_handler(input_dict=input_dict)
@@ -304,13 +353,14 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
 
 
 def main():
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
         logfilename = sys.argv[1]
+        trace_name = sys.argv[2]
         logging.basicConfig(filename=f'/newhome/Orca/monitored_op/logs/monitored_op-{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')
-        run(log_file_path=LOG_FILE + '_RL_' + logfilename)
+        run(log_file_path=LOG_FILE + '_RL_' + logfilename, trace_name=trace_name)
     else:
         run()
 
