@@ -14,12 +14,44 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rcompmon.proto\x12\x07\x63ompmon\"c\n\tSARReport\x12\x11\n\treport_id\x18\x01 \x01(\x05\x12\x14\n\x0cinput_states\x18\x02 \x03(\x02\x12\x14\n\x0c\x61\x63tion_taken\x18\x03 \x01(\x02\x12\x17\n\x0freward_recieved\x18\x04 \x01(\x02\"\x1c\n\x0bReportReply\x12\r\n\x05reply\x18\x01 \x01(\t2?\n\x07\x43ompMon\x12\x34\n\x06Report\x12\x12.compmon.SARReport\x1a\x14.compmon.ReportReply\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rcompmon.proto\x12\x07\x63ompmon\"\'\n\rFinishMessage\x12\x16\n\x0e\x63omponent_name\x18\x01 \x01(\t\"\x1c\n\x0b\x46inishReply\x12\r\n\x05reply\x18\x01 \x01(\t\"k\n\x0fRegisterMessage\x12\x14\n\x0cis_main_comp\x18\x01 \x01(\x08\x12\x16\n\x0e\x63omponent_name\x18\x02 \x01(\t\x12\x16\n\x0ehistory_length\x18\x03 \x01(\x05\x12\x12\n\ntrace_name\x18\x04 \x01(\t\"\x1e\n\rRegisterReply\x12\r\n\x05reply\x18\x01 \x01(\t\"\x8e\x01\n\tSARReport\x12\x16\n\x0e\x63omponent_name\x18\x01 \x01(\t\x12\x14\n\x0cinput_states\x18\x02 \x03(\x02\x12\x14\n\x0c\x61\x63tion_taken\x18\x03 \x01(\x02\x12\x17\n\x0freward_recieved\x18\x04 \x01(\x02\x12\x11\n\twall_time\x18\x05 \x01(\x02\x12\x11\n\treport_id\x18\x06 \x01(\x05\"\x1c\n\x0bReportReply\x12\r\n\x05reply\x18\x01 \x01(\t2\xb9\x01\n\x07\x43ompMon\x12\x34\n\x06Report\x12\x12.compmon.SARReport\x1a\x14.compmon.ReportReply\"\x00\x12>\n\x08Register\x12\x18.compmon.RegisterMessage\x1a\x16.compmon.RegisterReply\"\x00\x12\x38\n\x06\x46inish\x12\x16.compmon.FinishMessage\x1a\x14.compmon.FinishReply\"\x00\x62\x06proto3')
 
 
 
+_FINISHMESSAGE = DESCRIPTOR.message_types_by_name['FinishMessage']
+_FINISHREPLY = DESCRIPTOR.message_types_by_name['FinishReply']
+_REGISTERMESSAGE = DESCRIPTOR.message_types_by_name['RegisterMessage']
+_REGISTERREPLY = DESCRIPTOR.message_types_by_name['RegisterReply']
 _SARREPORT = DESCRIPTOR.message_types_by_name['SARReport']
 _REPORTREPLY = DESCRIPTOR.message_types_by_name['ReportReply']
+FinishMessage = _reflection.GeneratedProtocolMessageType('FinishMessage', (_message.Message,), {
+  'DESCRIPTOR' : _FINISHMESSAGE,
+  '__module__' : 'compmon_pb2'
+  # @@protoc_insertion_point(class_scope:compmon.FinishMessage)
+  })
+_sym_db.RegisterMessage(FinishMessage)
+
+FinishReply = _reflection.GeneratedProtocolMessageType('FinishReply', (_message.Message,), {
+  'DESCRIPTOR' : _FINISHREPLY,
+  '__module__' : 'compmon_pb2'
+  # @@protoc_insertion_point(class_scope:compmon.FinishReply)
+  })
+_sym_db.RegisterMessage(FinishReply)
+
+RegisterMessage = _reflection.GeneratedProtocolMessageType('RegisterMessage', (_message.Message,), {
+  'DESCRIPTOR' : _REGISTERMESSAGE,
+  '__module__' : 'compmon_pb2'
+  # @@protoc_insertion_point(class_scope:compmon.RegisterMessage)
+  })
+_sym_db.RegisterMessage(RegisterMessage)
+
+RegisterReply = _reflection.GeneratedProtocolMessageType('RegisterReply', (_message.Message,), {
+  'DESCRIPTOR' : _REGISTERREPLY,
+  '__module__' : 'compmon_pb2'
+  # @@protoc_insertion_point(class_scope:compmon.RegisterReply)
+  })
+_sym_db.RegisterMessage(RegisterReply)
+
 SARReport = _reflection.GeneratedProtocolMessageType('SARReport', (_message.Message,), {
   'DESCRIPTOR' : _SARREPORT,
   '__module__' : 'compmon_pb2'
@@ -38,10 +70,18 @@ _COMPMON = DESCRIPTOR.services_by_name['CompMon']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _SARREPORT._serialized_start=26
-  _SARREPORT._serialized_end=125
-  _REPORTREPLY._serialized_start=127
-  _REPORTREPLY._serialized_end=155
-  _COMPMON._serialized_start=157
-  _COMPMON._serialized_end=220
+  _FINISHMESSAGE._serialized_start=26
+  _FINISHMESSAGE._serialized_end=65
+  _FINISHREPLY._serialized_start=67
+  _FINISHREPLY._serialized_end=95
+  _REGISTERMESSAGE._serialized_start=97
+  _REGISTERMESSAGE._serialized_end=204
+  _REGISTERREPLY._serialized_start=206
+  _REGISTERREPLY._serialized_end=236
+  _SARREPORT._serialized_start=239
+  _SARREPORT._serialized_end=381
+  _REPORTREPLY._serialized_start=383
+  _REPORTREPLY._serialized_end=411
+  _COMPMON._serialized_start=414
+  _COMPMON._serialized_end=599
 # @@protoc_insertion_point(module_scope)
