@@ -20,8 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+from utils import logger, get_my_logger, Params, get_data_file
 import threading
 import logging
+logging.basicConfig(filename="/newhome/Orca/orca_pensieve/logs/d5.log", level=logging.DEBUG)
+d5logger = logging.getLogger(__name__)
+action_logger = get_my_logger("action_logger", "/newhome/Orca/orca_pensieve/logs/actions.log", log_fmt="%(message)s")
 import tensorflow as tf
 import sys
 from agent import Agent
@@ -37,9 +41,10 @@ import datetime
 import sysv_ipc
 import signal
 import pickle
-from utils import logger, Params, state_action_logger
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
+
+#action_file = get_data_file("/newhome/Orca/orca_pensieve/data/actions.data")
 
 
 def create_input_op_shape(obs, tensor):
@@ -416,7 +421,8 @@ def main():
                             a1 = agent.get_action(s1,not config.eval)
 
                         a1 = a1[0][0]
-
+                        action_logger.debug(a1)
+                        #action_file.write(f"{a1}\n")
 
                         env.write_action(a1)
 
