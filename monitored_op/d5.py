@@ -148,6 +148,18 @@ class learner_killer():
         print("-----------------------Learner's killed---------------------")
         sys.exit(0)
 
+class actor_killer():
+    def __init__(self, rpc_stub):
+        self.rpc_stub = rpc_stub
+        d5logger.debug("actor killer registering sigterm")
+        signal.signal(signal.SIGTERM, self.handler_term)
+    def handler_term(self, signum, frame):
+         d5logger.debug(f"actor killer caught {signum} - call FINISH rpc here to save logs")
+         compmon_response = self.rpc_stub.Finish(compmon_pb2.FinishMessage(component_name=COMPMON_COMPONENT_NAME))
+         d5logger.debug(f"Finish RPC replied with reply: {compmon_response.reply}")
+         print("------ d5 Actor Killed ---------")
+         sys.exit(0)
+        
 
 def main():
 
@@ -421,6 +433,11 @@ def main():
                 compmon_response = rpc_stub.Register(compmon_register_msg)
                 d5logger.debug(f"COMPMON: got response for register call: {compmon_response.reply}")
                 
+                
+                # register actor killer here - pass rpc_stub to it
+                __actor_killer = actor_killer(rpc_stub)
+                
+                
                 if params.dict['recurrent']:
                     a = agent.get_action(s0_rec_buffer,not config.eval)
                 else:
@@ -465,9 +482,9 @@ def main():
                             
                         else:
                             a1 = agent.get_action(s1,not config.eval)
-
+                        d5logger.info(f"action raw: {a1}")
                         a1 = a1[0][0]
-
+                        d5logger.info(f'actual action: {a1}')
                         env.write_action(a1)
                         
                         

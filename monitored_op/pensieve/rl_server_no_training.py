@@ -24,7 +24,6 @@ LOG = None
 #LOG = logging.getLogger(__name__)
 
 import grpc
-sys.path.append('../myrpc')
 import compmon_pb2, compmon_pb2_grpc
 
 
@@ -52,7 +51,7 @@ SUMMARY_DIR = './monitored_op/results'
 LOG_FILE = './monitored_op/results/log'
 # in format of time_stamp bit_rate buffer_size rebuffer_time video_chunk_size download_time reward
 # NN_MODEL = None
-NN_MODEL = '/newhome/Orca/monitored_op/pensieve/seperate_models/pensieve_fcc_linear.ckpt'
+NN_MODEL = '/newhome/Orca/monitored_op/pensieve/seperate_models/pensieve_below6mbps_linear_12200.ckpt'
 REWARD_TYPE = 'linear'
 
 COMPMON_ADDRESS = "130.127.133.146"
@@ -191,10 +190,11 @@ def make_request_handler(input_dict):
 
                 action_prob = self.actor.predict(np.reshape(state, (1, S_INFO, S_LEN)))
                 action_cumsum = np.cumsum(action_prob)
-                bit_rate = (action_cumsum > np.random.randint(1, RAND_RANGE) / float(RAND_RANGE)).argmax()
+                bit_rate_cumsums = (action_cumsum > np.random.randint(1, RAND_RANGE) / float(RAND_RANGE))
+                bit_rate = bit_rate_cumsums.argmax()
+                LOG.info(f"\naction_prob: {action_prob}\naction_cumsums: {action_cumsum}\nbitrate_cumsums: {bit_rate_cumsums}\nbit_rate: {bit_rate}")
                 # Note: we need to discretize the probability into 1/RAND_RANGE steps,
                 # because there is an intrinsic discrepancy in passing single state and batch states
-
                 # send data to html side
                 send_data = str(bit_rate)
 
