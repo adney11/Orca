@@ -73,8 +73,8 @@ then
         done
         #Bring down the learner and actors ...
         #echo "sleeping for 315 seconds before killing actors and learner"
-        sleep 20
-        echo "[$0]: waited for 20 seconds.."
+        #sleep 20
+        #echo "[$0]: waited for 20 seconds.."
         echo "killing actors and learner"
         for i in `seq 0 $((num_actors))`
         do
