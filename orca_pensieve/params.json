@@ -22,6 +22,7 @@
     "max_eps_steps": 64,
     "max_epochs": 1000000,
     "eval_frequency": 1000,
+    "num_action_bins": 5,
     "state_dim": 7,
     "input_dim": 15,
     "action_dim": 1,

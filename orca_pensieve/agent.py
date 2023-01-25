@@ -40,13 +40,14 @@ def create_input_op_shape(obs, tensor):
 
 class Actor():
 
-    def __init__(self, s_dim, a_dim,h1_shape,h2_shape, action_scale=1.0, name='actor'):
+    def __init__(self, s_dim, a_dim,h1_shape,h2_shape, num_action_bins=5, action_scale=1.0, name='actor'):
         self.s_dim = s_dim
         self.a_dim = a_dim
         self.name = name
         self.action_scale = action_scale
         self.h1_shape = h1_shape
         self.h2_shape = h2_shape
+        self.num_action_bins = num_action_bins
 
 
     def train_var(self):
@@ -64,7 +65,13 @@ class Actor():
             h2 = tf.layers.batch_normalization(h2, training=is_training, scale=False)
             h2 = tf.nn.leaky_relu(h2)
 
-            output = tf.layers.dense(h2, units=self.a_dim, activation=tf.nn.tanh)
+            #output = tf.layers.dense(h2, units=self.a_dim, activation=tf.nn.tanh)
+            # output needs to be one value - want it to be max of softmax, of 5 bins
+            # -1, -0.5, 0, 0.5, 1
+            h3 = tf.layers.dense(h2, units=self.num_action_bins, activation=tf.nn.softmax, name='fc3')
+            argmax = tf.argmax(h3, dimension=1)
+            action_bins = tf.constant(np.linspace(-1, 1, self.num_action_bins).tolist(), name="action_bins") # TODO expose action range here if needed later
+            output = tf.gather(action_bins, argmax)
 
             scale_output = tf.multiply(output, self.action_scale)
 
@@ -101,7 +108,7 @@ class Critic():
 
 
 class Agent():
-    def __init__(self, s_dim, a_dim, h1_shape,h2_shape,gamma=0.995, batch_size=8, lr_a=1e-4, lr_c=1e-3, tau=1e-3, mem_size=1e5,action_scale=1.0, action_range=(-1.0, 1.0),
+    def __init__(self, s_dim, a_dim, h1_shape,h2_shape, num_action_bins=5, gamma=0.995, batch_size=8, lr_a=1e-4, lr_c=1e-3, tau=1e-3, mem_size=1e5,action_scale=1.0, action_range=(-1.0, 1.0),
                 noise_type=3, noise_exp=50000, summary=None,stddev=0.1, PER=False, alpha=0.6, CDQ=True, LOSS_TYPE='HUBERT'):
         self.PER = PER
         self.CDQ = CDQ
@@ -114,6 +121,7 @@ class Agent():
         self.train_dir = './train_dir'
         self.step_epochs = tf.Variable(0, trainable=False, name='epoch')
         self.global_step = tf.train.get_or_create_global_step(graph=None)
+        self.num_action_bins = num_action_bins
 
 
         self.s0 = tf.placeholder(tf.float32, shape=[None, self.s_dim], name='s0')
@@ -149,7 +157,7 @@ class Agent():
             self.actor_noise = OU_Noise(mu=np.zeros(a_dim), sigma=float(self.stddev) * np.ones(a_dim),dt=0.5)
 
         # Main Actor/Critic Network
-        self.actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape)
+        self.actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape, num_action_bins=self.num_action_bins)
         self.critic = Critic(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape)
         self.critic2 = Critic(self.s_dim, self.a_dim, action_scale=action_scale, name='critic2',h1_shape=self.h1_shape,h2_shape=self.h2_shape)
         self.actor_out = self.actor.build(self.s0, self.is_training)
@@ -158,7 +166,7 @@ class Agent():
         self.critic_actor_out = self.critic.build(self.s0, self.actor_out)
 
         # Target Actor/Critic network
-        self.target_actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name="target_actor")
+        self.target_actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name="target_actor", num_action_bins=self.num_action_bins)
         self.target_critic = Critic(self.s_dim, self.a_dim, action_scale=action_scale ,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name='target_critic')
         self.target_critic2 = Critic(self.s_dim, self.a_dim, action_scale=action_scale, name='target_critic2',h1_shape=self.h1_shape,h2_shape=self.h2_shape)
 
