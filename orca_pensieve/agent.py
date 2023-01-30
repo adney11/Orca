@@ -25,11 +25,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import numpy as np
 import os
+import sys
 import time
 
 EXPLORE = 4000
 STDDEV = 0.1
 NSTEP = 0.3
+
+import logging
+agentlogger = logging.getLogger(__name__)
 
 
 from utils import OU_Noise, ReplayBuffer, G_Noise, Prioritized_ReplayBuffer
@@ -40,14 +44,14 @@ def create_input_op_shape(obs, tensor):
 
 class Actor():
 
-    def __init__(self, s_dim, a_dim,h1_shape,h2_shape, num_action_bins=5, action_scale=1.0, name='actor'):
+    def __init__(self, s_dim, a_dim,h1_shape,h2_shape, actual_a_dim=1, action_scale=1.0, name='actor'):
         self.s_dim = s_dim
         self.a_dim = a_dim
         self.name = name
         self.action_scale = action_scale
         self.h1_shape = h1_shape
         self.h2_shape = h2_shape
-        self.num_action_bins = num_action_bins
+        self.actual_a_dim = actual_a_dim
 
 
     def train_var(self):
@@ -65,15 +69,21 @@ class Actor():
             h2 = tf.layers.batch_normalization(h2, training=is_training, scale=False)
             h2 = tf.nn.leaky_relu(h2)
 
-            #output = tf.layers.dense(h2, units=self.a_dim, activation=tf.nn.tanh)
+            output = tf.layers.dense(h2, units=self.a_dim, activation=tf.nn.tanh)
+            
             # output needs to be one value - want it to be max of softmax, of 5 bins
-            # -1, -0.5, 0, 0.5, 1
-            h3 = tf.layers.dense(h2, units=self.num_action_bins, activation=tf.nn.softmax, name='fc3')
-            argmax = tf.argmax(h3, dimension=1)
-            action_bins = tf.constant(np.linspace(-1, 1, self.num_action_bins).tolist(), name="action_bins") # TODO expose action range here if needed later
-            output = tf.gather(action_bins, argmax)
-
-            scale_output = tf.multiply(output, self.action_scale)
+            # # -1, -0.5, 0, 0.5, 1
+            #output = tf.layers.dense(h2, units=self.a_dim, activation=tf.nn.softmax)
+            #output = tf.Print(output, [output, tf.shape(output)], message="@@@@@@@ ACTOR: softmax output and shape = ", summarize=self.a_dim)
+            # h3 = tf.layers.dense(h2, units=self.num_action_bins, activation=tf.nn.softmax, name='fc3')
+            # argmax = tf.argmax(h3, dimension=1)
+            # action_bins = tf.constant(np.linspace(-1, 1, self.num_action_bins).tolist(), name="action_bins") # TODO expose action range here if needed later
+            # my_output = tf.gather(action_bins, argmax)
+            # output = tf.Print(output, [output, tf.shape(output), my_output, tf.shape(my_output)], message="@@@@@@@@@@@ ACTOR_OP:  output and shape = ")
+            #scale_output = output
+            #scale_output = tf.multiply(output, self.action_scale)
+            #changed_output = cretize(output)
+        return output
 
 
         return scale_output
@@ -102,13 +112,14 @@ class Critic():
             h1 = tf.layers.dense(s, units=self.h1_shape, activation=tf.nn.leaky_relu, name='fc1')
 
             h2 = tf.layers.dense(tf.concat([h1, action], -1), units=self.h2_shape, activation=tf.nn.leaky_relu, name='fc2')
+            h2 = tf.Print(h2, [tf.shape(h2), action,tf.shape(action)], "******* CRITIC_OP: h2.shape, action, action.shape = ", name="criticPrint", summarize=10)
             output = tf.layers.dense(h2, units=1)
 
         return output
 
 
 class Agent():
-    def __init__(self, s_dim, a_dim, h1_shape,h2_shape, num_action_bins=5, gamma=0.995, batch_size=8, lr_a=1e-4, lr_c=1e-3, tau=1e-3, mem_size=1e5,action_scale=1.0, action_range=(-1.0, 1.0),
+    def __init__(self, s_dim, a_dim, h1_shape,h2_shape, actual_a_dim=1, max_softmax_val = 0.5, gamma=0.995, batch_size=8, lr_a=1e-4, lr_c=1e-3, tau=1e-3, mem_size=1e5,action_scale=1.0, action_range=(-1.0, 1.0),
                 noise_type=3, noise_exp=50000, summary=None,stddev=0.1, PER=False, alpha=0.6, CDQ=True, LOSS_TYPE='HUBERT'):
         self.PER = PER
         self.CDQ = CDQ
@@ -121,9 +132,7 @@ class Agent():
         self.train_dir = './train_dir'
         self.step_epochs = tf.Variable(0, trainable=False, name='epoch')
         self.global_step = tf.train.get_or_create_global_step(graph=None)
-        self.num_action_bins = num_action_bins
-
-
+        
         self.s0 = tf.placeholder(tf.float32, shape=[None, self.s_dim], name='s0')
         self.s1 = tf.placeholder(tf.float32, shape=[None, self.s_dim], name='s1')
         self.is_training = tf.placeholder(tf.bool, name='Actor_is_training')
@@ -139,6 +148,14 @@ class Agent():
         else:
             self.rp_buffer = Prioritized_ReplayBuffer(int(mem_size), s_dim, a_dim, batch_size=batch_size, alpha=alpha)
 
+        self.actual_a_dim = actual_a_dim
+        # max training data softmax value - stored as state for Agent
+        self.max_trained_softmax_value = max_softmax_val
+        
+
+
+    
+        # noise will still need one dimension - change out a_dim, actual_action_dim
 
         if noise_type == 1:
             self.actor_noise = OU_Noise(mu=np.zeros(a_dim), sigma=float(self.stddev) * np.ones(a_dim),dt=1,exp=self.noise_exp)
@@ -155,9 +172,26 @@ class Agent():
             self.actor_noise = None
         else:
             self.actor_noise = OU_Noise(mu=np.zeros(a_dim), sigma=float(self.stddev) * np.ones(a_dim),dt=0.5)
+        
+        # if noise_type == 1:
+        #     self.actor_noise = OU_Noise(mu=np.zeros(actual_a_dim), sigma=float(self.stddev) * np.ones(actual_a_dim),dt=1,exp=self.noise_exp)
+        # elif noise_type == 2:
+        #     ## Gaussian with gradually decay
+        #     self.actor_noise = G_Noise(mu=np.zeros(actual_a_dim), sigma=float(self.stddev) * np.ones(actual_a_dim), explore =self.noise_exp)
+        # elif noise_type == 3:
+        #     ## Gaussian without gradually decay
+        #     self.actor_noise = G_Noise(mu=np.zeros(actual_a_dim), sigma=float(self.stddev) * np.ones(actual_a_dim), explore = None,theta=0.1)
+        # elif noise_type == 4:
+        #     ## Gaussian without gradually decay
+        #     self.actor_noise = G_Noise(mu=np.zeros(actual_a_dim), sigma=float(self.stddev) * np.ones(actual_a_dim), explore = EXPLORE,theta=0.1,mode="step",step=NSTEP)
+        # elif noise_type == 5:
+        #     self.actor_noise = None
+        # else:
+        #     self.actor_noise = OU_Noise(mu=np.zeros(actual_a_dim), sigma=float(self.stddev) * np.ones(actual_a_dim),dt=0.5)
+        
 
         # Main Actor/Critic Network
-        self.actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape, num_action_bins=self.num_action_bins)
+        self.actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape, actual_a_dim=self.actual_a_dim)
         self.critic = Critic(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape)
         self.critic2 = Critic(self.s_dim, self.a_dim, action_scale=action_scale, name='critic2',h1_shape=self.h1_shape,h2_shape=self.h2_shape)
         self.actor_out = self.actor.build(self.s0, self.is_training)
@@ -166,7 +200,7 @@ class Agent():
         self.critic_actor_out = self.critic.build(self.s0, self.actor_out)
 
         # Target Actor/Critic network
-        self.target_actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name="target_actor", num_action_bins=self.num_action_bins)
+        self.target_actor = Actor(self.s_dim, self.a_dim, action_scale=action_scale,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name="target_actor", actual_a_dim=self.actual_a_dim)
         self.target_critic = Critic(self.s_dim, self.a_dim, action_scale=action_scale ,h1_shape=self.h1_shape,h2_shape=self.h2_shape,name='target_critic')
         self.target_critic2 = Critic(self.s_dim, self.a_dim, action_scale=action_scale, name='target_critic2',h1_shape=self.h1_shape,h2_shape=self.h2_shape)
 
@@ -314,10 +348,11 @@ class Agent():
 
         action = self.sess.run([self.actor_out], feed_dict=fd)
         if use_noise:
-            noise = self.actor_noise(action[0])
+            noise = self.actor_noise(action)
             action += noise
             action = np.clip(action, self.action_range[0], self.action_range[1])
-        return action
+        #agentlogger.debug("get_action: actual_action: {actual_action} action_confidence: {action_confidence}")
+        return action   # return softmax converted value as action
 
     def get_q(self, s, a):
 

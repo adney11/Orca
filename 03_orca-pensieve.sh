@@ -113,8 +113,8 @@ then
         qs=$QUEUE_SIZE
         del=$DELAY
 
-        echo "[$0]: ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary"
-        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary
+        echo "[$0]: ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo"
+        ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo
         pids="$pids $!"
         echo "[$0]: initialised actor with pid: $!"
         act_id=$((act_id+1))

@@ -26,6 +26,7 @@ import logging
 logging.basicConfig(filename="/newhome/Orca/orca_pensieve/logs/d5.log", level=logging.DEBUG)
 d5logger = logging.getLogger(__name__)
 action_logger = get_my_logger("action_logger", "/newhome/Orca/orca_pensieve/logs/actions.log", log_fmt="%(message)s")
+ood_logger = get_my_logger("ood_logger", "/newhome/Orca/orca_pensieve/logs/ood.log", log_fmt="%(message)s")
 import tensorflow as tf
 import sys
 from agent import Agent
@@ -43,6 +44,7 @@ import signal
 import pickle
 from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
+import scipy as sp
 
 #action_file = get_data_file("/newhome/Orca/orca_pensieve/data/actions.data")
 
@@ -52,6 +54,43 @@ def create_input_op_shape(obs, tensor):
     return np.reshape(obs, input_shape)
 
 
+def action_after_ood_decision(action, action_range, max_trained_softmax_value):
+    # expecting a list of 2 values 
+    # [0] - actual action
+    # [1] - action confidence - this is the softmax prob
+    THRESHOLD = 0.5
+    DEFAULT_ACTION = 0
+    OOD_MARKER = 2
+    a_dim = int(action.size)
+    ood_logger.debug(f"action_range supplied: {action_range}, recieved action_dim: {a_dim}")
+    actual_actions = np.linspace(action_range[0], action_range[1], a_dim).tolist()
+    ood_logger.debug(f"actual actions: {actual_actions}")
+    # do softmax here
+    # compare softmax value with max_softmax to 
+    # ONGOING: MAYBE: some mapping between softmax value to[0,1]
+    #softmax_values = tf.nn.softmax(action)
+
+    ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
+    softmax_values = sp.special.softmax(action)
+    ood_logger.debug(f"softmax values: {softmax_values}")
+    action_max_sftmx_value = np.max(softmax_values)
+    action_softmax_argmax = np.argmax(softmax_values)
+    ood_logger.debug(f"max softmax from values: {action_max_sftmx_value} stored at index: {action_softmax_argmax}")
+    ood_logger.debug(f"actual_actions has max index of {len(actual_actions)-1}")
+    actual_action = actual_actions[action_softmax_argmax]
+    action_confidence = action_max_sftmx_value
+    
+    confidence_diff = max_trained_softmax_value - action_confidence
+    if confidence_diff > 0:
+        ratio = confidence_diff / max_trained_softmax_value
+        if ratio < THRESHOLD:
+            actual_action = DEFAULT_ACTION
+            action_confidence = OOD_MARKER
+    else:
+        ood_logger.debug(f"^ACTION CONFIDENCE HIGHER THAN MAX OF TRAINED SET^")
+    ood_logger.debug(f"actual action, action confidence: {actual_action}, {action_confidence}")
+    return [actual_action]
+    
 
 def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_step_counter):
 
@@ -73,9 +112,14 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
             a = agent.get_action(s0_rec_buffer, False)
         else:
             a = agent.get_action(s0, False)
-        a = a[0][0]
+        #a = a[0][0]
+        actual_action = action_after_ood_decision(a, agent.action_range, agent.max_trained_softmax_value)
+        d5logger.debug(f"evaluate_TCP: got action: {a} - converted to {actual_action}")
+        
+        # do ood stuff here - or write function to do ood stuff
 
-        env.write_action(a)
+        #env.write_action(a)
+        env.write_action(actual_action[0])
 
         while True:
 
@@ -92,13 +136,16 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
                 else:
                     a1 = agent.get_action(s1, False)
 
-                a1 = a1[0][0]
-
-                env.write_action(a1)
+                #a1 = a1[0][0]
+                actual_action = action_after_ood_decision(a1, agent.action_range, agent.max_trained_softmax_value)
+                d5logger.debug(f"evaluate_TCP: got action: {a1} converted to {actual_action}")
+                #env.write_action(a1)
+                env.write_action(actual_action[0])
 
             else:
                 print("Invalid state received...\n")
-                env.write_action(a)
+                #env.write_action(a)
+                env.write_action(actual_action[0])
                 continue
 
             ep_r = ep_r+r
@@ -256,7 +303,7 @@ def main():
 
         with tf.device(shared_job_device):
 
-            agent = Agent(s_dim, a_dim, num_action_bins=params.dict['num_action_bins'], batch_size=params.dict['batch_size'], summary=summary_writer,h1_shape=params.dict['h1_shape'],
+            agent = Agent(s_dim, a_dim, actual_a_dim=params.dict['actual_action_dim'], batch_size=params.dict['batch_size'], summary=summary_writer,h1_shape=params.dict['h1_shape'],
                         h2_shape=params.dict['h2_shape'],stddev=params.dict['stddev'],mem_size=params.dict['memsize'],gamma=params.dict['gamma'],
                         lr_c=params.dict['lr_c'],lr_a=params.dict['lr_a'],tau=params.dict['tau'],PER=params.dict['PER'],CDQ=params.dict['CDQ'],
                         LOSS_TYPE=params.dict['LOSS_TYPE'],noise_type=params.dict['noise_type'],noise_exp=params.dict['noise_exp'])
@@ -398,8 +445,11 @@ def main():
                     a = agent.get_action(s0_rec_buffer,not config.eval)
                 else:
                     a = agent.get_action(s0, not config.eval)
-                a = a[0][0]
-                env.write_action(a)
+                #a = a[0][0]
+                actual_action = action_after_ood_decision(a, agent.action_range, agent.max_trained_softmax_value)
+                d5logger.debug(f"actor: got action: {a} converted to {actual_action}")
+                env.write_action(actual_action[0])
+                #env.write_action(a)
                 epoch = 0
                 ep_r = 0.0
                 start = time.time()
@@ -420,21 +470,24 @@ def main():
                         else:
                             a1 = agent.get_action(s1,not config.eval)
 
-                        a1 = a1[0][0]
+                        #a1 = a1[0][0]
+                        actual_action = action_after_ood_decision(a1, agent.action_range, agent.max_trained_softmax_value)
+                        d5logger.debug(f"actor: got action: {a1} converted to {actual_action}")
                         action_logger.debug(a1)
                         #action_file.write(f"{a1}\n")
 
-                        env.write_action(a1)
+                        #env.write_action(a1)
+                        env.write_action(actual_action[0])
 
                     else:
                         print("TaskID:"+str(config.task)+"Invalid state received...\n")
-                        env.write_action(a)
+                        env.write_action(actual_action[0])
                         continue
 
                     if params.dict['recurrent']:
-                        fd = {a_s0:s0_rec_buffer, a_action:a, a_reward:np.array([r]), a_s1:s1_rec_buffer, a_terminal:np.array([terminal], np.float)}
+                        fd = {a_s0:s0_rec_buffer, a_action:create_input_op_shape(a, a_action), a_reward:np.array([r]), a_s1:s1_rec_buffer, a_terminal:np.array([terminal], np.float)}
                     else:
-                        fd = {a_s0:s0, a_action:a, a_reward:np.array([r]), a_s1:s1, a_terminal:np.array([terminal], np.float)}
+                        fd = {a_s0:s0, a_action:create_input_op_shape(a, a_action), a_reward:np.array([r]), a_s1:s1, a_terminal:np.array([terminal], np.float)}
 
                     if not config.eval:
                         mon_sess.run(actor_op, feed_dict=fd)
@@ -474,3 +527,6 @@ def learner_update_thread(agent,params):
 
 if __name__ == "__main__":
     main()
+
+
+# /users/`whoami`/venv/bin/python orca_pensieve/d5.py --tb_interval=1 --base_path=orca_pensieve --load --eval --task=0 --job_name=actor --train_dir=orca_pensieve  --mem_r=%d --mem_w=%d

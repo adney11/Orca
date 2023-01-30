@@ -255,6 +255,7 @@ void start_server(int flow_num, int client_port)
     char*alpha;
     char *save_ptr;
     int signal_check_counter=0;
+    DBGPRINT(0,0, "waiting for RL module ready up..\n\n");
     while(!got_ready_signal_from_rl)
     {
         //Get alpha from RL-Module
@@ -273,7 +274,7 @@ void start_server(int flow_num, int client_port)
            }
         }
         else{
-            DBGPRINT(0,0, "Didn't get alpha, trying again\n");
+            //DBGPRINT(0,0, "Didn't get alpha, trying again\n");
             usleep(10000);
         }
         if (signal_check_counter>18000)
