@@ -46,6 +46,29 @@ logger = configure_logging("./rl_logging")
 state_action_logger = configure_logging('./state_action')
 
 
+def get_my_logger(logger_name, path_to_logfile, log_level=logging.DEBUG, log_fmt = None):
+    LOG_FORMAT = ("%(asctime)s [%(levelname)s]: %(message)s")
+    if log_fmt is not None:
+        LOG_FORMAT = log_fmt
+    new_logger = logging.getLogger(logger_name)
+    new_logger.setLevel(log_level)
+    logfile_dir = os.path.dirname(path_to_logfile)
+    if not os.path.exists(logfile_dir):
+        os.makedirs(logfile_dir)
+    fh = logging.FileHandler(path_to_logfile)
+    fh.setLevel(log_level)
+    fh.setFormatter(logging.Formatter(LOG_FORMAT))
+    new_logger.addHandler(fh)
+    return new_logger
+
+def get_data_file(path_to_datafile):
+    file_dir = os.path.dirname(path_to_datafile)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+    f = open(path_to_datafile, 'w')
+    return f
+
+
 class G_Noise(object):
     def __init__(self, mu , sigma, explore=40000,theta=0.1,mu2=0.0,mode="exp",eps=1.0,step=0.3):
         self.epsilon = eps

@@ -1,5 +1,6 @@
 #!/bin/bash -x
 if [ $# -eq 4 ]
+then
 
     source setup.sh
 
@@ -39,7 +40,9 @@ if [ $# -eq 4 ]
 
     #sed "s/\"num_actors\"\: 1/\"num_actors\"\: $num_actors/" $cur_dir/params_base.json > "${dir}/params.json"
     #sed -i "s/\"memsize\"\: 5320000/\"memsize\"\: $memory_size/" "${dir}/params.json"
+    sed -i "s/\"num_actors\": [[:digit:]]\+,/\"num_actors\": $num_actors,/" "${dir}/params.json"
     sed -i "s/\"memsize\": [[:digit:]]\+,/\"memsize\": $memory_size,/" "${dir}/params.json"
+    
     sudo killall -s9 python orca-server-mahimahi-http
 
     epoch=20
@@ -48,7 +51,7 @@ if [ $# -eq 4 ]
   
 
     # Send all traces to all the remotes if load_traces = 1
-    if [ $2 -eq 1 ]:
+    if [ $2 -eq 1 ];
     then
         for node in ${remote_nodes[@]}
         do
@@ -64,7 +67,7 @@ if [ $# -eq 4 ]
         # Start the learning from the scratch
          /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} &
          lpid=$!
-    else if [ $1 -eq 2 ];
+    elif [ $1 -eq 2 ];
     then
         # Continue the learning on top of previous model
         /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} --load &
@@ -86,11 +89,12 @@ if [ $# -eq 4 ]
 
 
         echo "starting actor $actor_id ($i) on $node ($curr_node_idx)"
+        echo "using command: ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo'\""
         ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo'" &
         pids="$pids $!"
         act_id=$((act_id+1))
         act_port=$((act_port+1))
-        if [ $act_id%$num_actors_per_node -eq 0 ];
+        if [ $(($act_id%$num_actors_per_node)) -eq 0 ];
         then
             curr_node_idx=$((curr_node_idx+1))
             act_id=0
