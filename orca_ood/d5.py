@@ -25,7 +25,7 @@ from common import DIRNAME
 import threading
 import logging
 logging.basicConfig(filename=f"/newhome/Orca/{DIRNAME}/logs/d5.log", level=logging.DEBUG)
-d5logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 action_logger = get_my_logger("action_logger", f"/newhome/Orca/{DIRNAME}/logs/actions.log", log_fmt="%(message)s")
 ood_logger = get_my_logger("ood_logger", f"/newhome/Orca/{DIRNAME}/logs/ood.log", log_fmt="%(message)s")
 import tensorflow as tf
@@ -118,7 +118,8 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
             a = agent.get_action(s0, False)
         #a = a[0][0]
         actual_action = action_after_ood_decision(a, agent.action_range, agent.max_trained_softmax_value)
-        d5logger.debug(f"evaluate_TCP: got action: {a} - converted to {actual_action}")
+        old_actual_action = actual_action[0]
+        LOG.debug(f"evaluate_TCP: got action: {a} - converted to {actual_action}")
         
         # do ood stuff here - or write function to do ood stuff
 
@@ -142,7 +143,7 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
 
                 #a1 = a1[0][0]
                 actual_action = action_after_ood_decision(a1, agent.action_range, agent.max_trained_softmax_value)
-                d5logger.debug(f"evaluate_TCP: got action: {a1} converted to {actual_action}")
+                LOG.debug(f"evaluate_TCP: got action: {a1} converted to {actual_action}")
                 #env.write_action(a1)
                 env.write_action(actual_action[0])
 
@@ -158,12 +159,14 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
             if (step_counter+1) % params.dict['tb_interval'] == 0:
 
                 summary = tf.summary.Summary()
-                summary.value.add(tag='Eval/Step/0-Actions', simple_value=env.map_action(a))
+                #summary.value.add(tag='Eval/Step/0-Actions', simple_value=env.map_action(a))
+                summary.value.add(tag='Eval/Step/0-Actions', simple_value=env.map_action(old_actual_action))
                 summary.value.add(tag='Eval/Step/2-Reward', simple_value=r)
             summary_writer.add_summary(summary, eval_step_counter)
 
             s0 = s1
             a = a1
+            old_actual_action = actual_action[0]
             if params.dict['recurrent']:
                 s0_rec_buffer = s1_rec_buffer
 
@@ -221,7 +224,8 @@ def main():
 
     logfilename=f"{config.job_name}{config.task}"
     logging.basicConfig(filename=f'/newhome/Orca/{DIRNAME}/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
-    LOG = logging.getLogger(__name__)
+    global LOG
+    
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))
 
@@ -312,7 +316,7 @@ def main():
             agent = Agent(s_dim, a_dim, actual_a_dim=params.dict['actual_action_dim'], batch_size=params.dict['batch_size'], summary=summary_writer,h1_shape=params.dict['h1_shape'],
                         h2_shape=params.dict['h2_shape'],stddev=params.dict['stddev'],mem_size=params.dict['memsize'],gamma=params.dict['gamma'],
                         lr_c=params.dict['lr_c'],lr_a=params.dict['lr_a'],tau=params.dict['tau'],PER=params.dict['PER'],CDQ=params.dict['CDQ'],
-                        LOSS_TYPE=params.dict['LOSS_TYPE'],noise_type=params.dict['noise_type'],noise_exp=params.dict['noise_exp'])
+                        LOSS_TYPE=params.dict['LOSS_TYPE'],noise_type=params.dict['noise_type'],noise_exp=params.dict['noise_exp'], max_softmax_val=params.dict['max_trained_softmax_value'])
 
             dtypes = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32]
             shapes = [[s_dim], [a_dim], [1], [s_dim], [1]]
@@ -378,6 +382,7 @@ def main():
                 checkpoint_dir=params.dict['ckptdir'])
         else:
             scaffold = tf.train.Scaffold(saver=tf.train.Saver(keep_checkpoint_every_n_hours=0.5))
+            LOG.debug(f"creating mon_sess")
             mon_sess = tf.train.MonitoredTrainingSession(master=server.target,
                     save_checkpoint_secs=15,
                     save_summaries_secs=None,
@@ -387,12 +392,12 @@ def main():
                     scaffold=scaffold,
                     config=tfconfig,
                     hooks=None)
-
+        LOG.debug("created mon_sess - assigning to agent")
         agent.assign_sess(mon_sess)
-
+        LOG.debug("assigned mon_sess to agent")
 
         if is_learner:
-
+            print("I am the learner and i am ready")
             if config.eval is True:
                 print("=========================Learner is up===================")
                 while not mon_sess.should_stop():
@@ -405,6 +410,7 @@ def main():
             counter = 0
             start = time.time()
 
+            LOG.debug("starting learner dequeue thread")
             dequeue_thread = threading.Thread(target=learner_dequeue_thread, args=(agent,params, mon_sess, dequeue, queuesize_op, Dequeue_Length),daemon=True)
             first_time=True
 
@@ -416,7 +422,9 @@ def main():
 
                 up_del_tmp=params.dict['update_delay']/1000.0
                 time.sleep(up_del_tmp)
+                LOG.debug(f"counter: {counter}")
                 if agent.rp_buffer.ptr>200 or agent.rp_buffer.full :
+                    LOG.debug("running learner train step")
                     agent.train_step()
                     if params.dict['use_hard_target'] == False:
                         agent.target_update()
@@ -435,6 +443,7 @@ def main():
                             logger.info("rp_buffer ptr:{}".format(agent.rp_buffer.ptr))
 
                 counter += 1
+                
 
 
         else:
@@ -453,7 +462,7 @@ def main():
                     a = agent.get_action(s0, not config.eval)
                 #a = a[0][0]
                 actual_action = action_after_ood_decision(a, agent.action_range, agent.max_trained_softmax_value)
-                d5logger.debug(f"actor: got action: {a} converted to {actual_action}")
+                LOG.debug(f"actor: got action: {a} converted to {actual_action}")
                 env.write_action(actual_action[0])
                 #env.write_action(a)
                 epoch = 0
@@ -478,7 +487,7 @@ def main():
 
                         #a1 = a1[0][0]
                         actual_action = action_after_ood_decision(a1, agent.action_range, agent.max_trained_softmax_value)
-                        d5logger.debug(f"actor: got action: {a1} converted to {actual_action}")
+                        LOG.debug(f"actor: got action: {a1} converted to {actual_action}")
                         #action_logger.debug(a1)
                         #action_file.write(f"{a1}\n")
 

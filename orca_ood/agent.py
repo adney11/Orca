@@ -112,7 +112,7 @@ class Critic():
             h1 = tf.layers.dense(s, units=self.h1_shape, activation=tf.nn.leaky_relu, name='fc1')
 
             h2 = tf.layers.dense(tf.concat([h1, action], -1), units=self.h2_shape, activation=tf.nn.leaky_relu, name='fc2')
-            h2 = tf.Print(h2, [tf.shape(h2), action,tf.shape(action)], "******* CRITIC_OP: h2.shape, action, action.shape = ", name="criticPrint", summarize=10)
+            #h2 = tf.Print(h2, [tf.shape(h2), action,tf.shape(action)], "******* CRITIC_OP: h2.shape, action, action.shape = ", name="criticPrint", summarize=10)
             output = tf.layers.dense(h2, units=1)
 
         return output

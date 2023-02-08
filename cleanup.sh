@@ -11,3 +11,8 @@ then
 else
     echo "Nothing to kill - you're good to go!"
 fi
+
+if [ $# -eq 1 ];
+then
+    rm -r ./state_action ./rl_logging ./orca_ood/logs/*
+fi

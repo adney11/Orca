@@ -21,8 +21,8 @@ then
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
     eval_duration=320
-    num_actors=2
-    num_actors_per_node=1
+    num_actors=4
+    num_actors_per_node=2
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_ood"
     echo "[$0]: dir is: $dir"
@@ -90,14 +90,14 @@ then
 
         echo "starting actor $actor_id ($i) on $node ($curr_node_idx)"
         echo "using command: ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo'\""
-        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATIOn $qs $max_steps $orca_binary $abr_algo'" &
+        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo'" &
         pids="$pids $!"
         act_id=$((act_id+1))
         act_port=$((act_port+1))
         if [ $(($act_id%$num_actors_per_node)) -eq 0 ];
         then
             curr_node_idx=$((curr_node_idx+1))
-            act_id=0
+            #act_id=0
             act_port=$port_base
         fi
 
