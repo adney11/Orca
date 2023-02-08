@@ -21,7 +21,7 @@ do_test() {
         for trace in $traces*
         do
             tracename=$(basename $trace)
-            echo "./03_orca-pensieve.sh 4 44444 $abr $tracename"
+            echo "./03_orca-pensieve.sh 1 44444 $abr $tracename"
             ./03_orca-pensieve.sh 1 44444 $abr $tracename
             mv ./orca_pensieve/logs/actions.log ./orca_pensieve/data/$tracename-actions.data
             mv $trace $done_dir
