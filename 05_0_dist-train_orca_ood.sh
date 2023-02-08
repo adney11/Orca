@@ -89,8 +89,8 @@ then
 
 
         echo "starting actor $actor_id ($i) on $node ($curr_node_idx)"
-        echo "using command: ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo'\""
-        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del 0 $qs $max_steps $orca_binary $abr_algo'" &
+        echo "using command: ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo'\""
+        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATIOn $qs $max_steps $orca_binary $abr_algo'" &
         pids="$pids $!"
         act_id=$((act_id+1))
         act_port=$((act_port+1))
