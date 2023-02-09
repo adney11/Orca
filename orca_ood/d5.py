@@ -397,7 +397,7 @@ def main():
                     scaffold=scaffold,
                     config=tfconfig,
                     hooks=None)
-        LOG.debug("created mon_sess - assigning to agent")
+            LOG.debug("created mon_sess - assigning to agent")
         agent.assign_sess(mon_sess)
         LOG.debug("assigned mon_sess to agent")
 

@@ -167,7 +167,7 @@ int delay_ms;
 int client_port;
 sTrace *trace;
 
-#define DBGSERVER 0 
+#define DBGSERVER 5
 
 #define TARGET_RATIO_MIN 100
 #define TARGET_RATIO_MAX 1000

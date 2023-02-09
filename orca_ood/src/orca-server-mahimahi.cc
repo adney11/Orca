@@ -215,6 +215,7 @@ void start_server(int flow_num, int client_port)
     char*alpha;
     char *save_ptr;
     int signal_check_counter=0;
+    DBGPRINT(0,0, "waiting for RL module to get ready\n");
     while(!got_ready_signal_from_rl)
     {
         //Get alpha from RL-Module
