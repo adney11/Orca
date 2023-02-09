@@ -21,8 +21,8 @@ then
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
     eval_duration=320
-    num_actors=4
-    num_actors_per_node=2
+    num_actors=32
+    num_actors_per_node=16
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_ood"
     echo "[$0]: dir is: $dir"
@@ -34,7 +34,7 @@ then
     UPLINK_TRACE="wired6"
     QUEUE_SIZE=30                                 # in number of packets
     DELAY=10                                      # in ms
-    TRAINING_DURATION=600
+    TRAINING_DURATION=0
 
 
 
@@ -48,7 +48,11 @@ then
     epoch=20
     act_port=$port_base
      
-  
+    remote_output_dir="${dir}/remote_output_logs"
+    if [ ! -f $remote_output_dir ];
+    then
+        mkdir $remote_output_dir
+    fi
 
     # Send all traces to all the remotes if load_traces = 1
     if [ $2 -eq 1 ];
@@ -96,9 +100,14 @@ then
         do
             rsync -avz -e ssh $modeldata $modelindex $modelmeta $checkpoint_file $node:$dir/train_dir/learner0/
         done
-        exit
         echo "uploaded model to remote servers"
     fi
+
+    # upload most recent params.json
+    for node in ${remote_nodes[@]}
+    do
+        rsync -avz -e ssh "${dir}/params.json" $node:$dir/
+    done
     
     #Bring up the learner:
     echo "[$0]: ./learner.sh  $dir $first_time &"
@@ -113,7 +122,7 @@ then
         /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} --load &
         lpid=$!
     fi
-    sleep 20
+    sleep 10
     echo "starting actors on remote machines"
     #Bring up the actors:
     act_id=0
@@ -140,7 +149,6 @@ then
             #act_id=0
             act_port=$port_base
         fi
-
     done
 
     for pid in $pids
@@ -160,6 +168,7 @@ then
     for node in ${remote_nodes[@]}
     do
         ssh $node "bash -c 'sudo killall -s15 python orca-server-mahimahi'"
+        ssh $node "bash -c 'cd /newhome/Orca; nohup ./clean_shmem.sh"
     done
 else
     echo "usage: $0 [{Learning from scratch=1} {Continue your learning=0} {Just Do Evaluation=4}] [base port number ] [abr_algo]"
