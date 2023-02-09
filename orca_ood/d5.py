@@ -64,6 +64,8 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     THRESHOLD = 0.1
     DEFAULT_ACTION = 0
     OOD_MARKER = 2
+    backup_action = action
+    action = action[0]
     ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
     a_dim = int(action.size)
     ood_logger.debug(f"action_range supplied: {action_range}, recieved action_dim: {a_dim}")
