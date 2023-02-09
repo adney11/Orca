@@ -5,6 +5,8 @@ then
     exit
 fi
 
+source setup.sh
+
 port=$1
 period=$2
 first_time=$3
