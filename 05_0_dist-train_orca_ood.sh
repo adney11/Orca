@@ -59,6 +59,46 @@ then
         done
         echo "loaded traces on remote servers"
     fi
+
+    # Send the most recent model files to remote servers
+    if [ $1 -eq 2 ];
+    then
+        # find checkpoint file
+        checkpoint_file="${dir}/train_dir/learner0/checkpoint"
+        if [ ! -f $checkpoint_file ]
+        then
+            echo "checkpoint doesn't exist - pls check"
+            exit
+        fi
+        modelname=$(head -n 1 $checkpoint_file | awk -F ' ' '{print $2}' | sed -e 's/^"//' -e 's/"$//')
+        echo "got: $modelname"
+        # required files
+        modeldata="${modelname}.data-00000-of-00001"
+        modelindex="${modelname}.index"
+        modelmeta="${modelname}.meta"
+        if [ ! -f $modeldata ]; 
+        then
+            echo "couldn't locate the data file: $modeldata"
+            exit
+        fi
+        if [ ! -f $modelindex ]; 
+        then
+            echo "couldn't locate the index file: $modelindex"
+            exit
+        fi
+        if [ ! -f $modelmeta ]; 
+        then
+            echo "couldn't locate the meta file: $modelmeta"
+            exit
+        fi
+
+        for node in ${remote_nodes[@]}
+        do
+            rsync -avz -e ssh $modeldata $modelindex $modelmeta $checkpoint_file $node:$dir/train_dir/learner0/
+        done
+        exit
+        echo "uploaded model to remote servers"
+    fi
     
     #Bring up the learner:
     echo "[$0]: ./learner.sh  $dir $first_time &"

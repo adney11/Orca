@@ -34,7 +34,7 @@
     "lr_c": 0.001,
     "tau": 0.001,
     "gamma": 0.995,
-    "memsize": 1000000,
+    "memsize": 2000000,
     "tb_interval": 1,
     "ckptdir": "train_dir/learner0",
     "scheme": null,

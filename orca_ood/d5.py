@@ -27,7 +27,7 @@ import logging
 logging.basicConfig(filename=f"/newhome/Orca/{DIRNAME}/logs/d5.log", level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 action_logger = get_my_logger("action_logger", f"/newhome/Orca/{DIRNAME}/logs/actions.log", log_fmt="%(message)s")
-ood_logger = get_my_logger("ood_logger", f"/newhome/Orca/{DIRNAME}/logs/ood.log", log_fmt="%(message)s")
+ood_logger = None
 import tensorflow as tf
 import sys
 from agent import Agent
@@ -64,6 +64,7 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     THRESHOLD = 0.1
     DEFAULT_ACTION = 0
     OOD_MARKER = 2
+    ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
     a_dim = int(action.size)
     ood_logger.debug(f"action_range supplied: {action_range}, recieved action_dim: {a_dim}")
     actual_actions = np.linspace(action_range[0], action_range[1], a_dim).tolist()
@@ -225,7 +226,9 @@ def main():
     logfilename=f"{config.job_name}{config.task}"
     logging.basicConfig(filename=f'/newhome/Orca/{DIRNAME}/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
     global LOG
+    global ood_logger
     
+    ood_logger = get_my_logger(f"ood_logger-{config.task}", f"/newhome/Orca/{DIRNAME}/logs/ood-{config.task}.log", log_fmt="%(message)s")
     ## parameters from file
     params = Params(os.path.join(config.base_path,'params.json'))
 
