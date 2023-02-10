@@ -135,6 +135,7 @@ then
         del=$DELAY
 
         echo "starting actors $act_id - $((act_id+num_actors_per_node)) on $node"
+        echo "ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./05_1_start_batch_of_actors.sh ${num_actors_per_node} ${port_base} $epoch ${first_time} $scheme_ $dir $trace_name $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo $act_id'\" >> $remote_output_dir/\"node-$node.out\" &"
         ssh $node "bash -c 'cd /newhome/Orca/; nohup ./05_1_start_batch_of_actors.sh ${num_actors_per_node} ${port_base} $epoch ${first_time} $scheme_ $dir $trace_name $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo $act_id'" >> $remote_output_dir/"node-$node.out" &
         pids="$pids $!"
         act_id=$((act_id+num_actors_per_node))

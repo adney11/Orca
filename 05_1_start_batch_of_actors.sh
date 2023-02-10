@@ -13,13 +13,13 @@ dir=$6
 trace_basename=$7
 upl=$8
 del=$9
-training_duration=$10
-qs=$11
+training_duration=${10}
+qs=${11}
 
-max_steps=$12
-orca_binary=$13
-abr_algo=$14
-actor_id_start=$15
+max_steps=${12}
+orca_binary=${13}
+abr_algo=${14}
+actor_id_start=${15}
 
 trace_postfix="-mahimahi"
 
