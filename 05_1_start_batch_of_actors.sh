@@ -25,6 +25,7 @@ trace_postfix="-mahimahi"
 
 cur_dir=`pwd -P`
 
+source setup.sh
 
 remote_output_dir="${dir}/remote_output_logs"
 if [ ! -f $remote_output_dir ];
