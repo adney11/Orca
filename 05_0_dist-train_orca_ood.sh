@@ -157,7 +157,7 @@ then
     for node in ${remote_nodes[@]}
     do
         ssh $node "bash -c 'sudo killall -s15 python orca-server-mahimahi'"
-        ssh $node "bash -c 'cd /newhome/Orca; nohup ./clean_shmem.sh"
+        ssh $node "bash -c 'cd /newhome/Orca; nohup ./clean_shmem.sh'"
     done
 else
     echo "usage: $0 [{Learning from scratch=1} {Continue your learning=0} {Just Do Evaluation=4}] [base port number ] [abr_algo]"

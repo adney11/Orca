@@ -36,7 +36,7 @@ echo "start $num_actors actors"
 act_port=$port_base
 for i in `seq 0 $((num_actors-1))`
 do
-    echo "actor_id_start: $act_id_start"
+    echo "actor_id_start: $actor_id_start"
     echo "i: $i"
     act_id=$((actor_id_start+i))
     downl="$trace_basename-$act_id$trace_postfix"
