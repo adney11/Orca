@@ -36,8 +36,8 @@ echo "start $num_actors actors"
 act_port=$port_base
 for i in `seq 0 $((num_actors-1))`
 do
-    downl="$trace_basename-$i$trace_postfix"
     act_id=$(($actor_id_start+$i))
+    downl="$trace_basename-$act_id$trace_postfix"
     echo "starting actor $act_id with port $act_port"
     ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $training_duration $qs $max_steps $orca_binary $abr_algo >> $remote_output_dir/"actor-$act_id.out" &
     pids="$pids $!"
