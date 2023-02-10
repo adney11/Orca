@@ -128,27 +128,16 @@ then
     act_id=0
     curr_node_idx=0
     act_port=$port_base
-    for i in `seq 0 $((num_actors-1))`
+    for node in ${remote_nodes[@]}
     do
-        node=${remote_nodes[$curr_node_idx]}
-        downl="$trace_name-$i$trace_postfix"
         upl=$UPLINK_TRACE
         qs=$QUEUE_SIZE
         del=$DELAY
 
-
-        echo "starting actor $actor_id ($i) on $node ($curr_node_idx)"
-        echo "using command: ssh $node \"bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo'\""
-        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo'" &
+        echo "starting actors $act_id - $((act_id+num_actors_per_node)) on $node"
+        ssh $node "bash -c 'cd /newhome/Orca/; nohup ./05_1_start_batch_of_actors.sh ${num_actors_per_node} ${port_base} $epoch ${first_time} $scheme_ $dir $trace_name $upl $del $TRAINING_DURATION $qs $max_steps $orca_binary $abr_algo $act_id'" >> $remote_output_dir/"node-$node.out" &
         pids="$pids $!"
-        act_id=$((act_id+1))
-        act_port=$((act_port+1))
-        if [ $(($act_id%$num_actors_per_node)) -eq 0 ];
-        then
-            curr_node_idx=$((curr_node_idx+1))
-            #act_id=0
-            act_port=$port_base
-        fi
+        act_id=$((act_id+num_actors_per_node))
     done
 
     for pid in $pids
