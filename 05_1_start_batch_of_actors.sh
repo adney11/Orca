@@ -11,7 +11,7 @@ first_time=$4
 scheme_=$5
 dir=$6
 trace_basename=$7
-uplink=$8
+upl=$8
 del=$9
 training_duration=$10
 qs=$11
@@ -36,6 +36,8 @@ echo "start $num_actors actors"
 act_port=$port_base
 for i in `seq 0 $((num_actors-1))`
 do
+    echo "actor_id_start: $act_id_start"
+    echo "i: $i"
     act_id=$((actor_id_start+i))
     downl="$trace_basename-$act_id$trace_postfix"
     echo "starting actor $act_id with port $act_port on trace $downl"
