@@ -55,8 +55,8 @@ do
 done
 
 echo "sleeping 30, and then cleaning"
-sleep 30
+sleep 10
 sudo killall -s15 python orca-server-mahimahi-http client
 
-sed -i "s/\"single_actor_eval\": true,/\"single_actor_eval\": false," "$dir/params.json"
+sed -i "s/\"single_actor_eval\": true,/\"single_actor_eval\": false,/" "$dir/params.json"
 echo "Done"
