@@ -43,7 +43,7 @@ logfilename = sys.argv[4]
 abr_algo = sys.argv[5] #"RL"
 sleep_time = random.randint(1,5)
 FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/orca_pensieve-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
+logging.basicConfig(filename=f'/newhome/Orca/orca_ood/logs/orca_ood-{logfilename}-run_video.log', level=logging.DEBUG,format=FORMAT)
 LOG = logging.getLogger(__name__)
 LOG.debug("starting run_video")
 	
@@ -61,7 +61,7 @@ signal.alarm(run_time + 40)
 try:
 	# copy over the chrome user dir
 	dp("copy over the chrome user dir...")
-	default_chrome_user_dir = '/newhome/Orca/orca_pensieve/pensieve/abr_browser_dir/chrome_data_dir'
+	default_chrome_user_dir = '/newhome/Orca/orca_ood/pensieve/abr_browser_dir/chrome_data_dir'
 	chrome_user_dir = '/tmp/chrome_user_dir_id_' + process_id
 	os.system('rm -r ' + chrome_user_dir)
 	os.system('cp -r ' + default_chrome_user_dir + ' ' + chrome_user_dir)
@@ -70,7 +70,7 @@ try:
 	# start abr algorithm server
 	dp("start abr algorithm server...")
 	python_binary = "/users/acardoza/venv/bin/python"
-	rl_server_dir = "/newhome/Orca/orca_pensieve/pensieve"
+	rl_server_dir = "/newhome/Orca/orca_ood/pensieve"
 	
 	if abr_algo == 'RL':
 		command = 'exec ' + python_binary + ' ' + rl_server_dir +'/rl_server_no_training.py ' + logfilename
@@ -94,7 +94,7 @@ try:
 	dp("initialize chrome driver")
 	#options=Options()
 	options=webdriver.ChromeOptions()
-	chrome_driver = '/newhome/Orca/orca_pensieve/pensieve/abr_browser_dir/chromedriver'
+	chrome_driver = '/newhome/Orca/orca_ood/pensieve/abr_browser_dir/chromedriver'
 	options.add_argument('--no-sandbox')
 	options.add_argument('--headless')
 	options.add_argument('--user-data-dir=' + chrome_user_dir)	

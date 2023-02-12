@@ -9,7 +9,7 @@
 
 
 #define RESPONSE_HEADER_SIZE 100
-const char* HTTP_SERVER_ROOT_PATH = "/newhome/Orca/orca_pensieve/pensieve/video_server";
+const char* HTTP_SERVER_ROOT_PATH = "/newhome/Orca/orca_ood/pensieve/video_server";
 const char* http_header = "HTTP/1.1 200 Ok\r\n";
 
 

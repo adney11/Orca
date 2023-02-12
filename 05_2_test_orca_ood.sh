@@ -2,7 +2,7 @@
 
 source setup.sh
 
-act_id=$1
+trace_id=$1
 port_base=$2
 abr_algo=$3
 trace_basename=$4
@@ -30,16 +30,20 @@ TRAINING_DURATION=600
 sudo killall -s9 python orca-server-mahimahi-http
 
 epoch=20
+act_id=0
 act_port=$port_base
 
 echo "setting single_actor_eval to true"
-sed -i "s/\"single_actor_eval\": false,/\"single_actor_eval\": true," "$dir/params.json"
+sed -i "s/\"single_actor_eval\": false,/\"single_actor_eval\": true,/" "$dir/params.json"
 
-downl="$trace_basename-$act_id$trace_postfix"
+downl="$trace_basename-$trace_id$trace_postfix"
 upl=$UPLINK_TRACE
 del=$DELAY
 qs=$QUEUE_SIZE
 training_duration=$TRAINING_DURATION
+
+first_time=4
+
 echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo &"
 ./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo &
 pids="$pids $!"

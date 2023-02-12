@@ -168,7 +168,7 @@ void start_server(int flow_num, int client_port)
     DBGMARK(0,0, "initialized container cmd variable\n");
     char python_binary[] = "/users/acardoza/venv/bin/python";
     DBGMARK(0,0, "python binary is: %s\n", python_binary);
-    char client_script[] = "/newhome/Orca/orca_pensieve/pensieve/run_video.py";
+    char client_script[] = "/newhome/Orca/orca_ood/pensieve/run_video.py";
     DBGMARK(0,0, "client_script is: %s\n", client_script);
     char container_cmd_format_str[] = "sudo -u `whoami` %s %s %s %d %d %s %s";
     DBGMARK(0,0, "container_cmd_format_str: %s\n", container_cmd_format_str);
@@ -679,7 +679,7 @@ void* DataThread(void* info)
             DBGMARK(0,0, "requesting for resource: %s\n",request_line->resource);
             char* ext = parse_resource_extension(request_line->resource);
             char content_type[100], content_path[100];
-            const char* ORCAPEN_SERVER_ROOT_PATH = "/newhome/Orca/orca_pensieve/pensieve/video_server";
+            const char* ORCAPEN_SERVER_ROOT_PATH = "/newhome/Orca/orca_ood/pensieve/video_server";
             sprintf(content_path, "%s%s", ORCAPEN_SERVER_ROOT_PATH, request_line->resource);
             char status[] = "OK";
             char reply_code = 200;

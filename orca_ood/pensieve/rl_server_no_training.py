@@ -280,7 +280,7 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
 def main():
     if len(sys.argv) == 2:
         logfilename = sys.argv[1]
-        logging.basicConfig(filename=f'/newhome/Orca/orca_pensieve/logs/orca_pensieve-{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
+        logging.basicConfig(filename=f'/newhome/Orca/orca_ood/logs/orca_ood-{logfilename}-rl_server_no_training.log', level=logging.DEBUG)
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')
