@@ -87,14 +87,14 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     actual_action = actual_actions[action_softmax_argmax]
     action_confidence = action_max_sftmx_value
     
-    confidence_diff = max_trained_softmax_value - action_confidence
-    if confidence_diff > 0:
-        ratio = confidence_diff / max_trained_softmax_value
-        if ratio < THRESHOLD:
-            actual_action = DEFAULT_ACTION
-            action_confidence = OOD_MARKER
-    else:
-        ood_logger.debug(f"^ACTION CONFIDENCE HIGHER THAN MAX OF TRAINED SET^")
+    # confidence_diff = max_trained_softmax_value - action_confidence
+    # if confidence_diff > 0:
+    #     ratio = confidence_diff / max_trained_softmax_value
+    #     if ratio < THRESHOLD:
+    #         actual_action = DEFAULT_ACTION
+    #         action_confidence = OOD_MARKER
+    # else:
+    #     ood_logger.debug(f"^ACTION CONFIDENCE HIGHER THAN MAX OF TRAINED SET^")
     ood_logger.debug(f"actual action, action confidence: {actual_action}, {action_confidence}")
     return [actual_action]
     
