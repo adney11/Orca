@@ -4,3 +4,6 @@ orca_pensieve/log/*
 rl_module/log/*
 traces/*-sec*
 scripts/plots/
+
+orca_ood/logs/*
+orca_ood/log/*
