@@ -59,4 +59,21 @@ sleep 10
 sudo killall -s15 python orca-server-mahimahi-http client
 
 sed -i "s/\"single_actor_eval\": true,/\"single_actor_eval\": false,/" "$dir/params.json"
+
+# make seperate directory for softmax distribution and action, confidence files
+smax_dir="${dir}/smax_distributions"
+if [ ! -f $smax_dir ];
+then
+    mkdir $smax_dir
+fi
+
+action_conf_dir = "${dir}/action_conf_pairs"
+if [ ! -f $action_conf_dir ];
+then
+    mkdir $action_conf_dir
+fi
+
+mv "$dir/logs/ood-0.log" "$action_conf_dir/$trace_basename-$trace_id"
+mv "$dir/logs/softmax_values_actor-0.log" "$smax_dir/$trace_basename-$trace_id"
+rm "$dir/logs/*"
 echo "Done"

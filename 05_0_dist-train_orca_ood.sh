@@ -2,6 +2,8 @@
 if [ $# -eq 4 ]
 then
 
+    # Begin Training new model
+    # ./05_0_dist-train_orca_ood.sh 1 0 6to12mbps_train/
     source setup.sh
 
     # Command Line Arguments
@@ -43,7 +45,7 @@ then
     sed -i "s/\"num_actors\": [[:digit:]]\+,/\"num_actors\": $num_actors,/" "${dir}/params.json"
     sed -i "s/\"memsize\": [[:digit:]]\+,/\"memsize\": $memory_size,/" "${dir}/params.json"
     
-    sudo killall -s9 python orca-server-mahimahi-http
+    sudo killall -s9 python orca-server-mahimahi-http orca-server-mahimahi
 
     epoch=20
     act_port=$port_base
@@ -65,7 +67,7 @@ then
     fi
 
     # Send the most recent model files to remote servers
-    if [ $1 -eq 2 ];
+    if [ $1 -eq 3 ];
     then
         # find checkpoint file
         checkpoint_file="${dir}/train_dir/learner0/checkpoint"
@@ -116,7 +118,7 @@ then
         # Start the learning from the scratch
          /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} &
          lpid=$!
-    elif [ $1 -eq 2 ];
+    elif [ $1 -eq 3 ];
     then
         # Continue the learning on top of previous model
         /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} --load &
