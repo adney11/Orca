@@ -16,6 +16,7 @@ if [ $# -eq 1 ];
 then
     rm -r ./state_action ./rl_logging ./orca_ood/logs/* ./orca_ood/plots/*
     rm orca_ood/remote_output_logs/*
+    rm -r orca_ood/log/*
     rm nohup.out
 fi
 
