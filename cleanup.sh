@@ -18,5 +18,6 @@ then
     rm orca_ood/remote_output_logs/*
     rm -r orca_ood/log/*
     rm nohup.out
+    rm orca_ood/remote_output_logs/*
 fi
 
