@@ -21,8 +21,8 @@ then
     scheme_="cubic"
     max_steps=500000         #Run untill you collect 50k samples per actor
     eval_duration=320
-    num_actors=32
-    num_actors_per_node=16
+    num_actors=60
+    num_actors_per_node=30
     memory_size=$((max_steps*num_actors))
     dir="${cur_dir}/orca_ood"
     echo "[$0]: dir is: $dir"

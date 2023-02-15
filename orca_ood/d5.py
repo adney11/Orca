@@ -66,24 +66,24 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     OOD_MARKER = 2
     backup_action = action
     action = action[0]
-    ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
+    #ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
     a_dim = int(action.size)
-    ood_logger.debug(f"action_range supplied: {action_range}, recieved action_dim: {a_dim}")
+    #ood_logger.debug(f"action_range supplied: {action_range}, recieved action_dim: {a_dim}")
     actual_actions = np.linspace(action_range[0], action_range[1], a_dim).tolist()
-    ood_logger.debug(f"actual actions: {actual_actions}")
+    #ood_logger.debug(f"actual actions: {actual_actions}")
     # do softmax here
     # compare softmax value with max_softmax to 
     # ONGOING: MAYBE: some mapping between softmax value to[0,1]
     #softmax_values = tf.nn.softmax(action)
 
-    ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
+    #ood_logger.debug(f"action supplied: {action}, type: {type(action)}")
     softmax_values = sp.special.softmax(action)
-    ood_logger.debug(f"softmax values: {softmax_values}")
+    #ood_logger.debug(f"softmax values: {softmax_values}")
     action_max_sftmx_value = np.max(softmax_values)
     action_softmax_argmax = np.argmax(softmax_values)
-    ood_logger.debug(f"max softmax from values: {action_max_sftmx_value} stored at index: {action_softmax_argmax}")
+    #ood_logger.debug(f"max softmax from values: {action_max_sftmx_value} stored at index: {action_softmax_argmax}")
     softmax_logger.debug(action_max_sftmx_value)
-    ood_logger.debug(f"actual_actions has max index of {len(actual_actions)-1}")
+    #ood_logger.debug(f"actual_actions has max index of {len(actual_actions)-1}")
     actual_action = actual_actions[action_softmax_argmax]
     action_confidence = action_max_sftmx_value
     
@@ -95,7 +95,7 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     #         action_confidence = OOD_MARKER
     # else:
     #     ood_logger.debug(f"^ACTION CONFIDENCE HIGHER THAN MAX OF TRAINED SET^")
-    ood_logger.debug(f"actual action, action confidence: {actual_action}, {action_confidence}")
+    ood_logger.debug(f"{actual_action}, {action_confidence}")
     return [actual_action]
     
 
