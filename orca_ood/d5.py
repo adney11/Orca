@@ -95,8 +95,11 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     #         action_confidence = OOD_MARKER
     # else:
     #     ood_logger.debug(f"^ACTION CONFIDENCE HIGHER THAN MAX OF TRAINED SET^")
-    ood_logger.debug(f"{actual_action}, {action_confidence}")
-    return [actual_action]
+    #ood_logger.debug(f"{actual_action}, {action_confidence}")
+    #return [actual_action]
+    action_confidence = 1
+    ood_logger.debug(f"{backup_action[0]}, {action_confidence}")
+    return [backup_action[0]]
     
 
 def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_step_counter):

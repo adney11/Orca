@@ -25,7 +25,7 @@
     "num_action_bins": 5,
     "state_dim": 7,
     "input_dim": 15,
-    "action_dim": 100,
+    "action_dim": 1,
     "actual_action_dim": 1,
     "delay_margin_coef": 1.25,
     "remote": true,
