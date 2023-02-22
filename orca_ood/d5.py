@@ -47,6 +47,8 @@ from envwrapper import Env_Wrapper, TCP_Env_Wrapper, GYM_Env_Wrapper
 
 import scipy as sp
 
+import cc_state_utils
+
 #action_file = get_data_file("/newhome/Orca/orca_pensieve/data/actions.data")
 
 
@@ -98,8 +100,8 @@ def action_after_ood_decision(action, action_range, max_trained_softmax_value):
     #ood_logger.debug(f"{actual_action}, {action_confidence}")
     #return [actual_action]
     action_confidence = 1
-    ood_logger.debug(f"{backup_action[0]}, {action_confidence}")
-    return [backup_action[0]]
+    ood_logger.debug(f"{backup_action[0][0]}, {action_confidence}")
+    return [backup_action[0][0]]
     
 
 def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_step_counter):
@@ -146,7 +148,10 @@ def evaluate_TCP(env, agent, epoch, summary_writer, params, s0_rec_buffer, eval_
                     a1 = agent.get_action(s1_rec_buffer, False)
                 else:
                     a1 = agent.get_action(s1, False)
-
+                LOG.debug(f"actor_eval: sending state: {s1}")
+                cc_state_utils.send_state(s1)
+                LOG.debug(f"actor_eval: sent state to pensieve state handler")
+                        
                 #a1 = a1[0][0]
                 actual_action = action_after_ood_decision(a1, agent.action_range, agent.max_trained_softmax_value)
                 LOG.debug(f"evaluate_TCP: got action: {a1} converted to {actual_action}")
@@ -487,7 +492,11 @@ def main():
 
                     if error_code == True:
                         s1_rec_buffer = np.concatenate( (s0_rec_buffer[params.dict['state_dim']:], s1) )
-
+                        # send state to pensieve here s1[0]
+                        LOG.debug(f"actor: sending state: {s1}")
+                        response = cc_state_utils.send_state(s1)
+                        LOG.debug(f"sent state to pensieve state handler,got response {response}")
+                        
                         if params.dict['recurrent']:
                             a1 = agent.get_action(s1_rec_buffer, not config.eval)
                         else:

@@ -15,6 +15,9 @@ import tensorflow as tf
 import time
 import a3c
 
+import cc_state_tracker
+
+
 import logging
 LOG = None
 #logging.basicConfig(filename='logs/rl_server_no_training.log', level=logging.DEBUG)
@@ -46,6 +49,8 @@ LOG_FILE = './orca_ood/results/log'
 NN_MODEL = '/newhome/Orca/orca_ood/pensieve/seperate_models/pensieve_below6mbps_linear_12200.ckpt'
 REWARD_TYPE = 'linear'
 
+STATE_LOG = './orca_ood/pensieve_state/state'
+
 # video chunk sizes
 size_video1 = [2354772, 2123065, 2177073, 2160877, 2233056, 1941625, 2157535, 2290172, 2055469, 2169201, 2173522, 2102452, 2209463, 2275376, 2005399, 2152483, 2289689, 2059512, 2220726, 2156729, 2039773, 2176469, 2221506, 2044075, 2186790, 2105231, 2395588, 1972048, 2134614, 2164140, 2113193, 2147852, 2191074, 2286761, 2307787, 2143948, 1919781, 2147467, 2133870, 2146120, 2108491, 2184571, 2121928, 2219102, 2124950, 2246506, 1961140, 2155012, 1433658]
 size_video2 = [1728879, 1431809, 1300868, 1520281, 1472558, 1224260, 1388403, 1638769, 1348011, 1429765, 1354548, 1519951, 1422919, 1578343, 1231445, 1471065, 1491626, 1358801, 1537156, 1336050, 1415116, 1468126, 1505760, 1323990, 1383735, 1480464, 1547572, 1141971, 1498470, 1561263, 1341201, 1497683, 1358081, 1587293, 1492672, 1439896, 1139291, 1499009, 1427478, 1402287, 1339500, 1527299, 1343002, 1587250, 1464921, 1483527, 1231456, 1364537, 889412]
@@ -75,6 +80,7 @@ def make_request_handler(input_dict):
             self.s_batch = input_dict['s_batch']
             self.a_batch = input_dict['a_batch']
             self.r_batch = input_dict['r_batch']
+            self.statelog_file = input_dict['statelog_file']
             BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
         def do_POST(self):
@@ -158,9 +164,19 @@ def make_request_handler(input_dict):
                         state = [np.zeros((S_INFO, S_LEN))]
                     else:
                         state = np.array(self.s_batch[-1], copy=True)
+                        
+                now = time.time()
+                self.statelog_file.write(str(now) + ',' +
+                                         str(state[0, -1]) + ',' +
+                                         str(state[1, -1]) + ',' +
+                                         str(state[2, -1]) + ',' +
+                                         str(state[3, -1]) + ',' +
+                                         str(state[4, :A_DIM]) + ',' +
+                                         str(state[5, -1]) + '\n')
+                self.statelog_file.flush()
 
                 # log wall_time, bit_rate, buffer_size, rebuffer_time, video_chunk_size, download_time, reward
-                self.log_file.write(str(time.time()) + '\t' +
+                self.log_file.write(str(now) + '\t' +
                                     str(VIDEO_BIT_RATE[post_data['lastquality']]) + '\t' +
                                     str(post_data['buffer']) + '\t' +
                                     str(rebuffer_time / M_IN_K) + '\t' +
@@ -217,7 +233,7 @@ def make_request_handler(input_dict):
     return Request_Handler
 
 
-def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
+def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE, statelog_file_path=STATE_LOG):
 
     np.random.seed(RANDOM_SEED)
 
@@ -226,7 +242,7 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
     if not os.path.exists(SUMMARY_DIR):
         os.makedirs(SUMMARY_DIR)
 
-    with tf.Session() as sess, open(log_file_path, 'a') as log_file:
+    with tf.Session() as sess, open(log_file_path, 'a') as log_file, open(statelog_file_path, 'a') as statelog_file:
 
         actor = a3c.ActorNetwork(sess,
                                  state_dim=[S_INFO, S_LEN], action_dim=A_DIM,
@@ -259,6 +275,13 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
         # we compute the difference to get
 
         video_chunk_count = 0
+        
+        # Start CC state Tracker here, and run in background
+        #tracename = log_file_path.split("_RL_")[1]
+        #cc_state_cmd = f"python /newhome/Orca/orca_ood/pensieve/cc_state_tracker.py {tracename} &"
+        #LOG.info(f"starting cc state with command: {cc_state_cmd}")
+        #os.system(cc_state_cmd)
+        #LOG.info(f"Started CC state tracker on 8334")
 
         input_dict = {'sess': sess, 'log_file': log_file,
                       'actor': actor, 'critic': critic,
@@ -266,7 +289,8 @@ def run(server_class=HTTPServer, port=8333, log_file_path=LOG_FILE):
                       'last_bit_rate': last_bit_rate,
                       'last_total_rebuf': last_total_rebuf,
                       'video_chunk_coount': video_chunk_count,
-                      's_batch': s_batch, 'a_batch': a_batch, 'r_batch': r_batch}
+                      's_batch': s_batch, 'a_batch': a_batch, 'r_batch': r_batch,
+                      'statelog_file': statelog_file}
 
         # interface to abr_rl server
         handler_class = make_request_handler(input_dict=input_dict)
@@ -284,7 +308,7 @@ def main():
         global LOG
         LOG = logging.getLogger(__name__)
         print('log file set')
-        run(log_file_path=LOG_FILE + '_RL_' + logfilename)
+        run(log_file_path=LOG_FILE + '_RL_' + logfilename, statelog_file_path=STATE_LOG + '_RL_' + logfilename)
     else:
         run()
 

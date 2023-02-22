@@ -246,6 +246,12 @@ void start_server(int flow_num, int client_port)
     }
     
     DBGMARK(0,0,"cmd for RL module: %s\n", cmd);
+
+    char cc_state_cmd[1000];
+    sprintf(cc_state_cmd, "python /newhome/Orca/orca_ood/pensieve/cc_state_tracker.py %s &", log_file);
+    DBGPRINT(0,0, "cmd for CC state Tracker: %s\n", cc_state_cmd);
+    system(cc_state_cmd);
+    DBGPRINT(0,0, "@@@@@@@@ Started CC State Tracker server @@@@@@@@@@@@@@ \n");
     initial_timestamp();
     system(cmd);
     //Wait to get OK signal (alpha=OK_SIGNAL)
