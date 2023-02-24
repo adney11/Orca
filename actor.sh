@@ -1,9 +1,9 @@
 #!/bin/bash -x
-if [ $# != 14 ]
-then
-    echo -e "usage:$0 port period first_time [underlying scheme:cubic , vegas , westwood , illinois , bbr, yeah , veno, scal , htcp , cdg , hybla ,... ] [path to ddpg.py] [actor id] [downlink] [uplink] [one-way link delay] [time time] [Qsize] [Max iterations per run]"
-    exit
-fi
+# if [ $# != 14 ]
+# then
+#     echo -e "usage:$0 port period first_time [underlying scheme:cubic , vegas , westwood , illinois , bbr, yeah , veno, scal , htcp , cdg , hybla ,... ] [path to ddpg.py] [actor id] [downlink] [uplink] [one-way link delay] [time time] [Qsize] [Max iterations per run]"
+#     exit
+# fi
 
 
 port=$1
@@ -23,24 +23,25 @@ orca_binary=${13}
 
 abr_algo=${14}
 
+pensieve_model=${15}
+
 echo "[$0-$id]: Running orca-$scheme: $down"
 echo "[$0-$id]: orca_binary is: $orca_binary"
 echo "[$0-$id]: full path is: $path/$orca_binary"
 #exit
 
-trace=""
 scheme_des="orca-$scheme-$latency-$period-$qsize"
 log="orca-$scheme-$down-$up-$latency-${period}-$qsize-$abr_algo"
 
 #Bring up the actor i:
 echo "[$0-$id]: will be done in $finish_time seconds ..."
-echo "[$0-$id]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo"
+#echo "[$0-$id]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo"
 
-echo "[$0-$id]: sleeping in hopes that learner is ready"
+#echo "[$0-$id]: sleeping in hopes that learner is ready"
+#echo "[$0-$id]: slept, now calling actor stuff"
 
-echo "[$0-$id]: slept, now calling actor stuff"
-echo "[$0-$id]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo"
-$path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo
+echo "[$0-$id]: $path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo $pensieve_model"
+$path/$orca_binary $port $path ${period} ${first_time} $scheme $id $down $up $latency $log $finish_time $qsize $max_it $abr_algo $pensieve_model
 echo "[$0-$id]: finished running $orca_binary" 
 #sudo killall -s15 python $orca_binary Xvfb chrome chromedriver
 sleep 10

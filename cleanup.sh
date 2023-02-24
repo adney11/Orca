@@ -1,4 +1,12 @@
 #/bin/bash
+
+# Script will clean up any stray python processes, and empty out logs, plots, remote_output_logs
+# and any stray files.
+
+# Be sure to save logs, before calling this with 1 option
+
+curr_dir="orca_ood"
+
 echo "Warning - this script will kill all python programs"
 pids=$(pgrep python)
 pids+=" $(pgrep chrome)"
@@ -14,10 +22,11 @@ fi
 
 if [ $# -eq 1 ];
 then
-    rm -r ./state_action ./rl_logging ./orca_ood/logs/* ./orca_ood/plots/*
-    rm orca_ood/remote_output_logs/*
-    rm -r orca_ood/log/*
+    rm -r ./state_action ./rl_logging 
+    rm "./${curr_dir}/logs/*" "./${curr_dir}/plots/*"
+    rm "${curr_dir}/remote_output_logs/*"
+    rm -r "${curr_dir}/log/*"
     rm nohup.out
-    rm orca_ood/remote_output_logs/*
+    rm "${curr_dir}/remote_output_logs/*"
 fi
 
