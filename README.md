@@ -1,3 +1,12 @@
+# Steps to use scripts:
+
+Current scripts to use 06_*
+
+Can use `./reset_directory.sh` on bucket_orca and make copy, to use for changes.
+
+
+
+
 # Orca v1.0
 
 This release presents the source code and materials used for the experiments in our SIGCOMM'20 paper: "Classic Meets Modern: A Pragmatic Learning-Based Congestion Control for the Internet" (https://dl.acm.org/doi/abs/10.1145/3387514.3405892).
