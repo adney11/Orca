@@ -5,7 +5,7 @@
 
 # Be sure to save logs, before calling this with 1 option
 
-curr_dir="orca_ood"
+curr_dir="bucket_orca"
 
 echo "Warning - this script will kill all python programs"
 pids=$(pgrep python)
@@ -23,10 +23,11 @@ fi
 if [ $# -eq 1 ];
 then
     rm -r ./state_action ./rl_logging 
-    rm "./${curr_dir}/logs/*" "./${curr_dir}/plots/*"
-    rm "${curr_dir}/remote_output_logs/*"
-    rm -r "${curr_dir}/log/*"
+    rm ./${curr_dir}/logs/* ./${curr_dir}/plots/*
+    rm ${curr_dir}/remote_output_logs/*
+    rm -r ${curr_dir}/log/*
     rm nohup.out
-    rm "${curr_dir}/remote_output_logs/*"
+    rm ${curr_dir}/remote_output_logs/*
+    rm -r ${curr_dir}/smax_distributions ${curr_dir}/action_conf_pairs
 fi
 

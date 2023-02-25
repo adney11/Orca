@@ -1,2 +1,2 @@
-model_checkpoint_path: "/newhome/Orca/orca_ood/train_dir/learner0/model.ckpt-3439392"
+model_checkpoint_path: "orca_1output_below6mbps.ckpt"
 

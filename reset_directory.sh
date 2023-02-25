@@ -23,6 +23,14 @@ for d in ${needed_dirs[@]}; do
         echo "making $d"
         mkdir $d
     else
-        find "$d/" -type f -not -name "learner0" -delete
+        if [ $d == $dir_traindir ]; then
+            mv $d/learner0 $d/..
+            rm -r $d/*
+            mv $d/../learner0 $d
+        elif [ $d == $dir_traindir_learner0 ]; then
+            echo "saving learner0 contents"
+        else
+            rm $d/*
+        fi  
     fi
 done

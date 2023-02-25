@@ -52,10 +52,13 @@ then
     echo "[$0-$id]: path: $path"
     out="sum-${log}.tr"
     echo "[$0-$id]: out: $out"
-    sudo echo $log >> $path/log/$out
+    if [ ! -f "$path/log/${out}" ]; then
+        echo "Avg. Capacity (Mbits/s), Avg. Thr (Mbits/s), Utilization %, 95th pc per-packet delay (ms), Avg. per-packet delay (ms)" >> $path/log/$out
+    fi
+    #sudo echo $log >> $path/log/$out
     sudo perl $path/mm-thr 500 $path/log/down-${log} 1>$path/plots/plot-${log}.svg 2>res_tmp
     sudo cat res_tmp >>$path/log/$out
-    sudo echo "------------------------------" >> $path/log/$out
+    #sudo echo "------------------------------" >> $path/log/$out
     rm *tmp
 fi
 echo "[$0-$id]: Done"

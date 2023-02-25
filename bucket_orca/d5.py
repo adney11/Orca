@@ -24,9 +24,8 @@ from utils import logger, get_my_logger, Params, get_data_file
 from common import DIRNAME
 import threading
 import logging
-logging.basicConfig(filename=f"/newhome/Orca/{DIRNAME}/logs/d5.log", level=logging.DEBUG)
-LOG = logging.getLogger(__name__)
-action_logger = get_my_logger("action_logger", f"/newhome/Orca/{DIRNAME}/logs/actions.log", log_fmt="%(message)s")
+LOG = None
+#action_logger = get_my_logger("action_logger", f"/newhome/Orca/{DIRNAME}/logs/actions.log", log_fmt="%(message)s")
 ood_logger = None
 import tensorflow as tf
 import sys
@@ -226,8 +225,9 @@ def main():
     config = parser.parse_args()
 
     logfilename=f"{config.job_name}{config.task}"
-    logging.basicConfig(filename=f'/newhome/Orca/{DIRNAME}/logs/{logfilename}-d5_py.log', level=logging.DEBUG)
     global LOG
+    logging.basicConfig(filename=f"/newhome/Orca/{DIRNAME}/logs/d5-{logfilename}.log", level=logging.DEBUG)
+    LOG = logging.getLogger(__name__)
     global ood_logger
     
     ood_logger = get_my_logger(f"ood_logger-{config.task}", f"/newhome/Orca/{DIRNAME}/logs/ood-{config.task}.log", log_fmt="%(message)s")

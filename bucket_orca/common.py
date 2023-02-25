@@ -1,1 +1,1 @@
-DIRNAME = "orca_ood"
+DIRNAME = "bucket_orca"

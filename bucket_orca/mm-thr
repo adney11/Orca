@@ -186,10 +186,12 @@ for ( my $i =0 ; $i < $size_; $i++ ) {
 my $avg=$sum/$size_;
 
 
-printf STDERR qq{Average capacity: %.2f Mbits/s\n}, $average_capacity;
-printf STDERR qq{Average throughput: %.2f Mbits/s (%.1f%% utilization)\n}, $average_throughput, 100.0 * $average_throughput / $average_capacity;
-printf STDERR qq{95th percentile per-packet queueing delay: %.0f ms\n}, $pp95;
-printf STDERR qq{Average per packet delay: %.0f ms\n}, $avg;
+# printf STDERR qq{Average capacity: %.2f Mbits/s\n}, $average_capacity;
+# printf STDERR qq{Average throughput: %.2f Mbits/s (%.1f%% utilization)\n}, $average_throughput, 100.0 * $average_throughput / $average_capacity;
+# printf STDERR qq{95th percentile per-packet queueing delay: %.0f ms\n}, $pp95;
+# printf STDERR qq{Average per packet delay: %.0f ms\n}, $avg;
+
+printf STDERR qq{%.2f, %.2f, %.1f, %.0f, %.0f\n}, $average_capacity, $average_throughput, 100.0 * $average_throughput / $average_capacity, $pp95, $avg;
 
 # make graph
 my $earliest_bin = min( keys %arrivals, keys %capacity, keys %departures );

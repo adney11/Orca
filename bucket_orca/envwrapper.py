@@ -34,7 +34,7 @@ import time
 import logging
 from common import DIRNAME
 #logging.basicConfig(filename='./rl_module_envwrapper.log', level=logging.DEBUG)
-logging.basicConfig(filename=f'./{DIRNAME}/logs/orca_ood_envwrapper.log', level=logging.DEBUG)
+#logging.basicConfig(filename=f'./{DIRNAME}/logs/orca_ood_envwrapper.log', level=logging.DEBUG)
 myLOG = logging.getLogger(__name__)
 
 class Env_Wrapper(object):
