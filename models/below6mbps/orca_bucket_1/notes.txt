@@ -1,0 +1,9 @@
+Trained on Feb 27, 2023
+
+Trained on below6mbps_train datatset
+
+run0
+
+run1
+
+run2
