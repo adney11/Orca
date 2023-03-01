@@ -1,0 +1,7 @@
+Trained these models on Feb 27, 2023
+
+run0: fresh training session, run till completion
+
+run1: building on last checkpoint from run0
+
+run2: building on last checkpoint from run1
