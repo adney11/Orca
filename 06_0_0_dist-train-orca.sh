@@ -30,7 +30,7 @@ then
     num_actors=60
     num_actors_per_node=30
     memory_size=$((max_steps*num_actors))
-    dir="${cur_dir}/${orca_dir}"
+    dir="${cur_dir}/${orcadir}"
     echo "[$0]: dir is: $dir"
     #exit
     orca_binary="orca-server-mahimahi"
@@ -38,7 +38,7 @@ then
     
     DOWNLINK_TRACE=$trace_name
     UPLINK_TRACE="wired6"
-    QUEUE_SIZE=30                                 # in number of packets
+    QUEUE_SIZE=50                                 # in number of packets
     DELAY=80                                      # in ms
     TRAINING_DURATION=0                           # seconds: set this to end training after these many seconds
 
@@ -61,7 +61,7 @@ then
     fi
 
     # Send all traces to all the remotes if load_traces = 1
-    if [ $2 -eq 1 ];
+    if [ $load_traces -eq 1 ];
     then
         for node in ${remote_nodes[@]}
         do
@@ -71,7 +71,7 @@ then
     fi
 
     # Send the most recent model files to remote servers
-    if [ $1 -eq 3 ];
+    if [ $first_time -eq 3 ];
     then
         # find checkpoint file
         checkpoint_file="${dir}/train_dir/learner0/checkpoint"
@@ -114,16 +114,18 @@ then
     do
         rsync -avz -e ssh "${dir}/params.json" $node:$dir/
     done
+
+    sleep 10
     
     #Bring up the learner:
     #echo "[$0]: ./learner.sh  $dir $first_time &"
-    if [ $1 -eq 1 ];
+    if [ $first_time -eq 1 ];
     then
         # Start the learning from the scratch
         echo "[$0]: /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} &"
         /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} &
         lpid=$!
-    elif [ $1 -eq 3 ];
+    elif [ $first_time -eq 3 ];
     then
         # Continue the learning on top of previous model
         echo "[$0]: /users/`logname`/venv/bin/python ${dir}/d5.py --job_name=learner --task=0 --base_path=${dir} --load &"
@@ -167,6 +169,7 @@ then
     do
         ssh $node "bash -c 'sudo killall -s15 python orca-server-mahimahi'"
         ssh $node "bash -c 'cd /newhome/Orca; nohup ./clean_shmem.sh'"
+        ssh $node "bash -c 'cd /newhome/Orca; nohup ./cleanup.sh'"
     done
 else
     echo "usage: $0 [{Learning from scratch=1} {Continue your learning=0} {Just Do Evaluation=4}] [base port number ] [abr_algo]"
