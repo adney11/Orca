@@ -4,11 +4,11 @@
 
 start_trace_id=0
 max_trace_id=99
-trace_basename='6to12mbps_test'
+trace_basename='below6mbps_test'
 port=44444
-abr_algo='BOLA'                     # Can be one of: BOLA fastMPC robustMPC FIXED FESTIVE RB BB
+abr_algo='robustMPC'                     # Can be one of: BOLA fastMPC robustMPC FIXED FESTIVE RB BB
 
-orcadir='bucket_orca'
+orca_dir='bucket_orca'
 
 for trace_id in `seq $start_trace_id $max_trace_id`
 do

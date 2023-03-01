@@ -683,7 +683,7 @@ void* DataThread(void* info)
             char* ext = parse_resource_extension(request_line->resource);
             char content_type[100], content_path[100];
             //const char* ORCAPEN_SERVER_ROOT_PATH = "/newhome/Orca/orca_ood/pensieve/video_server";
-            sprintf(content_path, "/newhome/Orca/%s/pensieve/video_server%s", path, request_line->resource);
+            sprintf(content_path, "%s/pensieve/video_server%s", path, request_line->resource);
             char status[] = "OK";
             char reply_code = 200;
 
@@ -693,6 +693,8 @@ void* DataThread(void* info)
                 strcpy(content_type, "video/iso.segment");
             } else if (strcmp(ext, "js") == 0) {
                 strcpy(content_type, "text/javascript");
+            } else if (strcmp(ext, "ico") == 0) {
+                strcpy(content_type, "text/plain");
             } else {
                 strcpy(content_type, "application/octet-stream");
             }
