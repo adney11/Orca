@@ -13,4 +13,5 @@ orca_dir='bucket_orca'
 for trace_id in `seq $start_trace_id $max_trace_id`
 do
     ./06_3_1_test_orca_NL_ABR.sh $trace_id $port $abr_algo $trace_basename $orca_dir
+    sleep 5
 done

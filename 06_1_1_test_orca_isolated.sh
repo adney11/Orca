@@ -15,7 +15,7 @@ trace_postfix="-mahimahi"
 cur_dir=`pwd -P`
 scheme_="cubic"
 max_steps=50000         #Run untill you collect 50k samples per actor
-eval_duration=5
+eval_duration=60
 num_actors=1
 memory_size=$((max_steps*num_actors))
 dir="${cur_dir}/${orcadir}"
@@ -26,8 +26,8 @@ echo "[$0]: orca_binary is: $orca_binary"
 
 
 UPLINK_TRACE="wired6"
-QUEUE_SIZE=30                                 # in number of packets
-DELAY=10                                      # in ms
+QUEUE_SIZE=50                                 # in number of packets
+DELAY=80                                      # in ms
 TRAINING_DURATION=600
 
 #sudo killall -s9 python orca-server-mahimahi
@@ -47,7 +47,7 @@ training_duration=$TRAINING_DURATION
 first_time=4
 
 echo "./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo 'None'"
-./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo "None"
+./actor.sh ${act_port} $epoch ${first_time} $scheme_ $dir $act_id $downl $upl $del $eval_duration $qs 0 $orca_binary $abr_algo "None" >> $dir/logs/"output-${act_id}"
 #pids="$pids $!"
 
 # for pid in $pids

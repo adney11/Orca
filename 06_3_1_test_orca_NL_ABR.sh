@@ -24,7 +24,7 @@ echo "[$0]: orca_binary is: $orca_binary"
 DOWNLINK_TRACE=$trace_name
 
 UPLINK_TRACE="wired6"
-QUEUE_SIZE=30                                 # in number of packets
+QUEUE_SIZE=50                                 # in number of packets
 DELAY=80                                      # in ms
 TRAINING_DURATION=600
 PENSIEVE_MODEL_NAME="pensieve_below6mbps_linear_12200"
@@ -57,9 +57,9 @@ do
     wait $pid
 done
 
-echo "sleeping 30, and then cleaning"
+echo "sleeping 10, and then cleaning"
 sleep 10
-sudo killall -s15 python orca-server-mahimahi-http client
+sudo killall -s9 python orca-server-mahimahi-http client chrome chrome-driver Xvfb
 
 sed -i "s/\"single_actor_eval\": true,/\"single_actor_eval\": false,/" "$dir/params.json"
 

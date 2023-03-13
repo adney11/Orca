@@ -5,7 +5,13 @@
 
 # Be sure to save logs, before calling this with 1 option
 
-curr_dir="bucket_orca"
+if [ $# -lt 1 ];
+then
+    echo "enter directory to clean"
+    exit
+fi
+curr_dir=$1
+echo "Cleaning ${curr_dir}"
 
 echo "Warning - this script will kill all python programs"
 pids=$(pgrep python)
@@ -20,14 +26,14 @@ else
     echo "Nothing to kill - you're good to go!"
 fi
 
-if [ $# -eq 1 ];
+if [ $# -eq 2 ];
 then
     rm -r ./state_action ./rl_logging 
-    rm ./${curr_dir}/logs/* ./${curr_dir}/plots/*
-    rm ${curr_dir}/remote_output_logs/*
-    rm -r ${curr_dir}/log/*
+    rm {curr_dir}logs/* ./${curr_dir}/plots/*
+    rm ${curr_dir}remote_output_logs/*
+    rm -r ${curr_dir}log/*
     rm nohup.out
-    rm ${curr_dir}/remote_output_logs/*
-    rm -r ${curr_dir}/smax_distributions ${curr_dir}/action_conf_pairs
+    rm ${curr_dir}remote_output_logs/*
+    rm -r ${curr_dir}smax_distributions ${curr_dir}action_conf_pairs
 fi
 
