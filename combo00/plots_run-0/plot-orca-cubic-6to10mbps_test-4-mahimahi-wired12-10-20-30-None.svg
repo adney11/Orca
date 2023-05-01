@@ -1,0 +1,754 @@
+<?xml version="1.0" encoding="utf-8"  standalone="no"?>
+<svg  onload="if (typeof(gnuplot_svg)!='undefined') gnuplot_svg.Init(evt)" 
+ width="1024" height="512"
+ viewBox="0 0 1024 512"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+
+<title>Throughput</title>
+<desc>Produced by GNUPLOT 5.2 patchlevel 2 </desc>
+
+<script type="text/javascript" > <![CDATA[
+// Javascript routines for interaction with SVG documents produced by 
+// gnuplot's SVG terminal driver.
+
+// Find your root SVG element
+var svg = document.querySelector('svg');
+
+// Create an SVGPoint for future math
+var pt = svg.createSVGPoint();
+
+// Get point in global SVG space
+function cursorPoint(evt){
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+var gnuplot_svg = { };
+
+gnuplot_svg.version = "17 February 2017";
+
+gnuplot_svg.SVGDoc = null;
+gnuplot_svg.SVGRoot = null;
+
+gnuplot_svg.Init = function(e)
+{
+   gnuplot_svg.SVGDoc = e.target.ownerDocument;
+   gnuplot_svg.SVGRoot = gnuplot_svg.SVGDoc.documentElement;
+   gnuplot_svg.axisdate = new Date();
+}
+
+gnuplot_svg.toggleVisibility = function(evt, targetId)
+{
+   var newTarget = evt.target;
+   if (targetId)
+      newTarget = gnuplot_svg.SVGDoc.getElementById(targetId);
+
+   var newValue = newTarget.getAttributeNS(null, 'visibility')
+
+   if ('hidden' != newValue)
+      newValue = 'hidden';
+   else
+      newValue = 'visible';
+
+   newTarget.setAttributeNS(null, 'visibility', newValue);
+
+   if (targetId) {
+      newTarget = gnuplot_svg.SVGDoc.getElementById(targetId.concat("_keyentry"));
+      if (newTarget)
+         newTarget.setAttributeNS(null, 'style',
+		newValue == 'hidden' ? 'filter:url(#greybox)' : 'none');
+   }
+
+   evt.preventDefault();
+   evt.stopPropagation();
+}
+
+// Mouse tracking echos coordinates to a floating text box
+
+gnuplot_svg.getText = function() {
+	return(document.getElementById("coord_text"));
+}
+
+gnuplot_svg.updateCoordBox = function(t, evt) {
+    /* 
+     * Apply screen CTM transformation to the evt screenX and screenY to get 
+     * coordinates in SVG coordinate space.  Use scaling parameters stored in
+     * the plot document by gnuplot to convert further into plot coordinates.
+     * Then position the floating text box using the SVG coordinates.
+     */
+    var m = document.documentElement.getScreenCTM();
+    var p = document.documentElement.createSVGPoint(); 
+    var loc = cursorPoint(evt);
+    p.x = loc.x;
+    p.y = loc.y;
+    var label_x, label_y;
+
+    // Allow for scrollbar position (Firefox, others?)
+    if (typeof evt.pageX != 'undefined') {
+        p.x = evt.pageX; p.y = evt.pageY; 
+    }
+    t.setAttribute("x", p.x);
+    t.setAttribute("y", p.y);
+   
+    var plotcoord = gnuplot_svg.mouse2plot(p.x,p.y);
+
+    if (gnuplot_svg.plot_timeaxis_x == "DMS" || gnuplot_svg.plot_timeaxis_y == "DMS") {
+	if (gnuplot_svg.plot_timeaxis_x == "DMS")
+	    label_x = gnuplot_svg.convert_to_DMS(x);
+	else
+	    label_x = plotcoord.x.toFixed(2);
+	if (gnuplot_svg.plot_timeaxis_y == "DMS")
+	    label_y = gnuplot_svg.convert_to_DMS(y);
+	else
+	    label_y = plotcoord.y.toFixed(2);
+
+    } else if (gnuplot_svg.polar_mode) {
+	polar = gnuplot_svg.convert_to_polar(plotcoord.x,plotcoord.y);
+	label_x = "ang= " + polar.ang.toPrecision(4);
+	label_y = "R= " + polar.r.toPrecision(4);
+
+    } else if (gnuplot_svg.plot_timeaxis_x == "Date") {
+	gnuplot_svg.axisdate.setTime(1000. * plotcoord.x);
+	var year = gnuplot_svg.axisdate.getUTCFullYear();
+	var month = gnuplot_svg.axisdate.getUTCMonth();
+	var date = gnuplot_svg.axisdate.getUTCDate();
+	label_x = (" " + date).slice (-2) + "/"
+		+ ("0" + (month+1)).slice (-2) + "/"
+		+ year;
+	label_y = plotcoord.y.toFixed(2);
+    } else if (gnuplot_svg.plot_timeaxis_x == "Time") {
+	gnuplot_svg.axisdate.setTime(1000. * plotcoord.x);
+	var hour = gnuplot_svg.axisdate.getUTCHours();
+	var minute = gnuplot_svg.axisdate.getUTCMinutes();
+	var second = gnuplot_svg.axisdate.getUTCSeconds();
+	label_x = ("0" + hour).slice (-2) + ":" 
+		+ ("0" + minute).slice (-2) + ":"
+		+ ("0" + second).slice (-2);
+	label_y = plotcoord.y.toFixed(2);
+    } else if (gnuplot_svg.plot_timeaxis_x == "DateTime") {
+	gnuplot_svg.axisdate.setTime(1000. * plotcoord.x);
+	label_x = gnuplot_svg.axisdate.toUTCString();
+	label_y = plotcoord.y.toFixed(2);
+    } else {
+	label_x = plotcoord.x.toFixed(2);
+	label_y = plotcoord.y.toFixed(2);
+    }
+
+    while (null != t.firstChild) {
+    	t.removeChild(t.firstChild);
+    }
+    var textNode = document.createTextNode(".  "+label_x+" "+label_y);
+    t.appendChild(textNode);
+}
+
+gnuplot_svg.showCoordBox = function(evt) {
+    var t = gnuplot_svg.getText();
+    if (null != t) {
+    	t.setAttribute("visibility", "visible");
+    	gnuplot_svg.updateCoordBox(t, evt);
+    }
+}
+
+gnuplot_svg.moveCoordBox = function(evt) {
+    var t = gnuplot_svg.getText();
+    if (null != t)
+    	gnuplot_svg.updateCoordBox(t, evt);
+}
+
+gnuplot_svg.hideCoordBox = function(evt) {
+    var t = gnuplot_svg.getText();
+    if (null != t)
+    	t.setAttribute("visibility", "hidden");
+}
+
+gnuplot_svg.toggleCoordBox = function(evt) {
+    var t = gnuplot_svg.getText();
+    if (null != t) {
+	var state = t.getAttribute('visibility');
+	if ('hidden' != state)
+	    state = 'hidden';
+	else
+	    state = 'visible';
+	t.setAttribute('visibility', state);
+    }
+}
+
+gnuplot_svg.toggleGrid = function() {
+    if (!gnuplot_svg.SVGDoc.getElementsByClassName) // Old browsers
+	return;
+    var grid = gnuplot_svg.SVGDoc.getElementsByClassName('gridline');
+    for (var i=0; i<grid.length; i++) {
+	var state = grid[i].getAttribute('visibility');
+	grid[i].setAttribute('visibility', (state == 'hidden') ? 'visible' : 'hidden');
+    }
+}
+
+gnuplot_svg.showHypertext = function(evt, mouseovertext)
+{
+    var lines = mouseovertext.split('\n');
+
+    // If text starts with "image:" process it as an xlinked bitmap
+    if (lines[0].substring(0,5) == "image") {
+	var nameindex = lines[0].indexOf(":");
+	if (nameindex > 0) {
+	    gnuplot_svg.showHyperimage(evt, lines[0]);
+	    lines[0] = lines[0].slice(nameindex+1);
+	}
+    }
+
+    var loc = cursorPoint(evt);
+    var anchor_x = loc.x;
+    var anchor_y = loc.y;
+	
+    var hypertextbox = document.getElementById("hypertextbox")
+    hypertextbox.setAttributeNS(null,"x",anchor_x+10);
+    hypertextbox.setAttributeNS(null,"y",anchor_y+4);
+    hypertextbox.setAttributeNS(null,"visibility","visible");
+
+    var hypertext = document.getElementById("hypertext")
+    hypertext.setAttributeNS(null,"x",anchor_x+14);
+    hypertext.setAttributeNS(null,"y",anchor_y+18);
+    hypertext.setAttributeNS(null,"visibility","visible");
+
+    var height = 2+16*lines.length;
+    hypertextbox.setAttributeNS(null,"height",height);
+    var length = hypertext.getComputedTextLength();
+    hypertextbox.setAttributeNS(null,"width",length+8);
+
+    // bounce off frame bottom
+    if (anchor_y > gnuplot_svg.plot_ybot + 16 - height) {
+	anchor_y -= height;
+	hypertextbox.setAttributeNS(null,"y",anchor_y+4);
+	hypertext.setAttributeNS(null,"y",anchor_y+18);
+    }
+
+    while (null != hypertext.firstChild) {
+        hypertext.removeChild(hypertext.firstChild);
+    }
+
+    var textNode = document.createTextNode(lines[0]);
+
+    if (lines.length <= 1) {
+	hypertext.appendChild(textNode);
+    } else {
+	xmlns="http://www.w3.org/2000/svg";
+	var tspan_element = document.createElementNS(xmlns, "tspan");
+	tspan_element.appendChild(textNode);
+	hypertext.appendChild(tspan_element);
+	length = tspan_element.getComputedTextLength();
+	var ll = length;
+
+	for (var l=1; l<lines.length; l++) {
+	    var tspan_element = document.createElementNS(xmlns, "tspan");
+	    tspan_element.setAttributeNS(null,"dy", 16);
+	    textNode = document.createTextNode(lines[l]);
+	    tspan_element.appendChild(textNode);
+	    hypertext.appendChild(tspan_element);
+
+	    ll = tspan_element.getComputedTextLength();
+	    if (length < ll) length = ll;
+	}
+	hypertextbox.setAttributeNS(null,"width",length+8);
+    }
+
+    // bounce off right edge
+    if (anchor_x > gnuplot_svg.plot_xmax + 14 - length) {
+	anchor_x -= length;
+	hypertextbox.setAttributeNS(null,"x",anchor_x+10);
+	hypertext.setAttributeNS(null,"x",anchor_x+14);
+    }
+
+    // left-justify multiline text
+    var tspan_element = hypertext.firstChild;
+    while (tspan_element) {
+	tspan_element.setAttributeNS(null,"x",anchor_x+14);
+	tspan_element = tspan_element.nextElementSibling;
+    }
+
+}
+
+gnuplot_svg.hideHypertext = function ()
+{
+    var hypertextbox = document.getElementById("hypertextbox")
+    var hypertext = document.getElementById("hypertext")
+    var hyperimage = document.getElementById("hyperimage")
+    hypertextbox.setAttributeNS(null,"visibility","hidden");
+    hypertext.setAttributeNS(null,"visibility","hidden");
+    hyperimage.setAttributeNS(null,"visibility","hidden");
+}
+
+gnuplot_svg.showHyperimage = function(evt, linktext)
+{
+    var loc = cursorPoint(evt);
+    var anchor_x = loc.x;
+    var anchor_y = loc.y;
+    // Allow for scrollbar position (Firefox, others?)
+    if (typeof evt.pageX != 'undefined') {
+        anchor_x = evt.pageX; anchor_y = evt.pageY; 
+    }
+
+    var hyperimage = document.getElementById("hyperimage")
+    hyperimage.setAttributeNS(null,"x",anchor_x);
+    hyperimage.setAttributeNS(null,"y",anchor_y);
+    hyperimage.setAttributeNS(null,"visibility","visible");
+
+    // Pick up height and width from "image(width,height):name"
+    var width = hyperimage.getAttributeNS(null,"width");
+    var height = hyperimage.getAttributeNS(null,"height");
+    if (linktext.charAt(5) == "(") {
+	width = parseInt(linktext.slice(6));
+	height = parseInt(linktext.slice(linktext.indexOf(",") + 1));
+	hyperimage.setAttributeNS(null,"width",width);
+	hyperimage.setAttributeNS(null,"height",height);
+	hyperimage.setAttributeNS(null,"preserveAspectRatio","none");
+    }
+
+    // bounce off frame bottom and right
+    if (anchor_y > gnuplot_svg.plot_ybot + 50 - height)
+	hyperimage.setAttributeNS(null,"y",20 + anchor_y-height);
+    if (anchor_x > gnuplot_svg.plot_xmax + 150 - width)
+	hyperimage.setAttributeNS(null,"x",10 + anchor_x-width);
+
+    // attach image URL as a link
+    linktext = linktext.slice(linktext.indexOf(":") + 1);
+    var xlinkns = "http://www.w3.org/1999/xlink";
+    hyperimage.setAttributeNS(xlinkns,"xlink:href",linktext);
+}
+
+// Convert from svg panel mouse coordinates to the coordinate
+// system of the gnuplot figure
+gnuplot_svg.mouse2plot = function(mousex,mousey) {
+    var plotcoord = new Object;
+    var plotx = mousex - gnuplot_svg.plot_xmin;
+    var ploty = mousey - gnuplot_svg.plot_ybot;
+    var x,y;
+
+    if (gnuplot_svg.plot_logaxis_x != 0) {
+	x = Math.log(gnuplot_svg.plot_axis_xmax)
+	  - Math.log(gnuplot_svg.plot_axis_xmin);
+	x = x * (plotx / (gnuplot_svg.plot_xmax - gnuplot_svg.plot_xmin))
+	  + Math.log(gnuplot_svg.plot_axis_xmin);
+	x = Math.exp(x);
+    } else {
+	x = gnuplot_svg.plot_axis_xmin + (plotx / (gnuplot_svg.plot_xmax-gnuplot_svg.plot_xmin)) * (gnuplot_svg.plot_axis_xmax - gnuplot_svg.plot_axis_xmin);
+    }
+
+    if (gnuplot_svg.plot_logaxis_y != 0) {
+	y = Math.log(gnuplot_svg.plot_axis_ymax)
+	  - Math.log(gnuplot_svg.plot_axis_ymin);
+	y = y * (ploty / (gnuplot_svg.plot_ytop - gnuplot_svg.plot_ybot))
+	  + Math.log(gnuplot_svg.plot_axis_ymin);
+	y = Math.exp(y);
+    } else {
+	y = gnuplot_svg.plot_axis_ymin + (ploty / (gnuplot_svg.plot_ytop-gnuplot_svg.plot_ybot)) * (gnuplot_svg.plot_axis_ymax - gnuplot_svg.plot_axis_ymin);
+    }
+
+    plotcoord.x = x;
+    plotcoord.y = y;
+    return plotcoord;
+}
+
+gnuplot_svg.convert_to_polar = function (x,y)
+{
+    polar = new Object;
+    var phi, r;
+    phi = Math.atan2(y,x);
+    if (gnuplot_svg.plot_logaxis_r) 
+        r = Math.exp( (x/Math.cos(phi) + Math.log(gnuplot_svg.plot_axis_rmin)/Math.LN10) * Math.LN10);
+    else if (gnuplot_svg.plot_axis_rmin > gnuplot_svg.plot_axis_rmax)
+        r = gnuplot_svg.plot_axis_rmin - x/Math.cos(phi);
+    else
+        r = gnuplot_svg.plot_axis_rmin + x/Math.cos(phi);
+    phi = phi * (180./Math.PI);
+    if (gnuplot_svg.polar_sense < 0)
+	phi = -phi;
+    if (gnuplot_svg.polar_theta0 != undefined)
+	phi = phi + gnuplot_svg.polar_theta0;
+    if (phi > 180.)
+	phi = phi - 360.;
+    polar.r = r;
+    polar.ang = phi;
+    return polar;
+}
+
+gnuplot_svg.convert_to_DMS = function (x)
+{
+    var dms = {d:0, m:0, s:0};
+    var deg = Math.abs(x);
+    dms.d = Math.floor(deg);
+    dms.m = Math.floor((deg - dms.d) * 60.);
+    dms.s = Math.floor((deg - dms.d) * 3600. - dms.m * 60.);
+    fmt = ((x<0)?"-":" ")
+        + dms.d.toFixed(0) + "°"
+	+ dms.m.toFixed(0) + "\""
+	+ dms.s.toFixed(0) + "'";
+    return fmt;
+}
+]]>
+</script>
+
+<!-- Tie mousing to entire bounding box of the plot -->
+<rect x="0" y="0" width="1024" height="512" fill="#ffffff" stroke="black" stroke-width="1"
+onclick="gnuplot_svg.toggleCoordBox(evt)"  onmousemove="gnuplot_svg.moveCoordBox(evt)"/>
+
+<!-- Also track mouse when it is on a plot element -->
+<g id="gnuplot_canvas" onclick="gnuplot_svg.toggleCoordBox(evt)" onmousemove="gnuplot_svg.moveCoordBox(evt)">
+
+<defs>
+
+	<circle id='gpDot' r='0.5' stroke-width='0.5'/>
+	<path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+	<path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+	<path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+	<rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+	<use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+	<path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+	<use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+	<use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+	<use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+	<path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+	<use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+	<filter id='textbox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='white' flood-opacity='1' result='bgnd'/>
+	  <feComposite in='SourceGraphic' in2='bgnd' operator='atop'/>
+	</filter>
+	<filter id='greybox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='lightgrey' flood-opacity='1' result='grey'/>
+	  <feComposite in='SourceGraphic' in2='grey' operator='atop'/>
+	</filter>
+</defs>
+<g fill="none" color="white" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,454.4 L999.0,454.4  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,454.4 L72.6,454.4 M999.0,454.4 L990.0,454.4  '/>	<g transform="translate(55.3,458.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,414.4 L999.0,414.4  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,414.4 L72.6,414.4 M999.0,414.4 L990.0,414.4  '/>	<g transform="translate(55.3,418.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,374.3 L999.0,374.3  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,374.3 L72.6,374.3 M999.0,374.3 L990.0,374.3  '/>	<g transform="translate(55.3,378.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,334.3 L999.0,334.3  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,334.3 L72.6,334.3 M999.0,334.3 L990.0,334.3  '/>	<g transform="translate(55.3,338.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,294.3 L999.0,294.3  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,294.3 L72.6,294.3 M999.0,294.3 L990.0,294.3  '/>	<g transform="translate(55.3,298.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 8</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,254.2 L999.0,254.2  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,254.2 L72.6,254.2 M999.0,254.2 L990.0,254.2  '/>	<g transform="translate(55.3,258.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,214.2 L999.0,214.2  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,214.2 L72.6,214.2 M999.0,214.2 L990.0,214.2  '/>	<g transform="translate(55.3,218.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 12</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,174.2 L999.0,174.2  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,174.2 L72.6,174.2 M999.0,174.2 L990.0,174.2  '/>	<g transform="translate(55.3,178.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 14</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,134.2 L999.0,134.2  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,134.2 L72.6,134.2 M999.0,134.2 L990.0,134.2  '/>	<g transform="translate(55.3,138.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 16</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,94.1 L999.0,94.1  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,94.1 L72.6,94.1 M999.0,94.1 L990.0,94.1  '/>	<g transform="translate(55.3,98.0)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 18</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="gray" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(187, 187, 187)' stroke-dasharray='2,4' class="gridline"  d='M63.6,54.1 L999.0,54.1  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,54.1 L72.6,54.1 M999.0,54.1 L990.0,54.1  '/>	<g transform="translate(55.3,58.0)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 20</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,454.4 L63.6,445.4 M63.6,54.1 L63.6,63.1  '/>	<g transform="translate(63.6,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M211.2,454.4 L211.2,445.4 M211.2,54.1 L211.2,63.1  '/>	<g transform="translate(211.2,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 20</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M358.9,454.4 L358.9,445.4 M358.9,54.1 L358.9,63.1  '/>	<g transform="translate(358.9,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 40</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M506.5,454.4 L506.5,445.4 M506.5,54.1 L506.5,63.1  '/>	<g transform="translate(506.5,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 60</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M654.2,454.4 L654.2,445.4 M654.2,54.1 L654.2,63.1  '/>	<g transform="translate(654.2,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 80</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M801.8,454.4 L801.8,445.4 M801.8,54.1 L801.8,63.1  '/>	<g transform="translate(801.8,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 100</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M949.4,454.4 L949.4,445.4 M949.4,54.1 L949.4,63.1  '/>	<g transform="translate(949.4,476.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 120</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,54.1 L63.6,454.4 L999.0,454.4 L999.0,54.1 L63.6,54.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<g transform="translate(16.3,254.3) rotate(270)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" >throughput (Mbits/s)</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<g transform="translate(531.3,503.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" >time (s)</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+	<g id="Throughput_plot_1" ><title>Capacity (mean 7.26 Mbits/s)</title>
+<g fill="none" color="white" stroke="currentColor" stroke-width="0.20" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="0.20" stroke-linecap="butt" stroke-linejoin="miter">
+	<g id="Throughput_plot_1_keyentry" visibility="visible" onclick="gnuplot_svg.toggleVisibility(evt,'Throughput_plot_1')">
+	<g transform="translate(472.5,21.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >Capacity (mean 7.26 Mbits/s)</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="0.20" stroke-linecap="butt" stroke-linejoin="miter">
+	<g stroke='none' shape-rendering='crispEdges'>
+		<polygon fill = 'rgb(148,   0, 211)' fill-opacity = '0.200000' points = '480.8,22.5 523.0,22.5 523.0,13.5 480.8,13.5 '/>
+	</g>
+	</g>
+	<g stroke='none' shape-rendering='crispEdges'>
+		<polygon fill = 'rgb(148,   0, 211)' fill-opacity = '0.200000' points = '63.6,364.8 67.3,364.3 71.0,359.0 74.7,358.6 78.3,353.7 82.0,352.8 85.7,348.4 89.4,348.4 93.1,343.1 96.8,343.6 100.5,337.8 104.2,338.3 107.9,333.5 111.6,333.5 115.3,328.2 118.9,328.7
+122.6,323.4 126.3,323.9 130.0,318.6 133.7,318.1 137.4,314.2 141.1,313.3 144.8,308.9 148.5,308.0 152.2,302.7 155.9,302.7 159.5,302.7 163.2,302.7 166.9,303.6 170.6,303.6 174.3,304.1 178.0,303.6
+181.7,305.6 185.4,304.6 189.1,305.6 192.8,305.6 196.5,307.0 200.1,306.5 203.8,308.0 207.5,307.5 211.2,308.0 214.9,307.5 218.6,308.9 222.3,308.5 226.0,309.4 229.7,309.4 233.4,309.4 237.1,308.9
+240.7,309.4 244.4,308.9 248.1,308.9 251.8,308.0 255.5,306.5 259.2,306.5 262.9,304.1 266.6,304.1 270.3,301.7 274.0,301.2 277.7,298.8 281.4,298.3 285.0,296.4 288.7,296.4 292.4,293.1 296.1,292.6
+299.8,290.2 303.5,289.7 307.2,286.3 310.9,286.8 314.6,284.4 318.3,283.9 322.0,282.0 325.6,282.0 329.3,280.0 333.0,279.6 336.7,277.6 340.4,277.6 344.1,276.2 347.8,275.7 351.5,274.7 355.2,273.8
+358.9,272.3 362.6,272.3 366.2,270.4 369.9,270.4 373.6,268.0 377.3,267.5 381.0,267.5 384.7,266.6 388.4,265.6 392.1,265.1 395.8,265.6 399.5,265.1 403.2,266.1 406.8,266.1 410.5,267.5 414.2,267.5
+417.9,268.0 421.6,268.0 425.3,270.4 429.0,269.9 432.7,272.8 436.4,272.8 440.1,276.2 443.8,275.7 447.4,278.6 451.1,278.6 454.8,280.0 458.5,280.5 462.2,282.5 465.9,282.5 469.6,283.9 473.3,283.9
+477.0,284.4 480.7,284.9 484.4,284.4 488.1,284.9 491.7,284.4 495.4,284.9 499.1,285.3 502.8,285.3 506.5,284.4 510.2,284.4 513.9,285.3 517.6,284.9 521.3,288.2 525.0,287.3 528.7,288.7 532.3,288.7
+536.0,291.6 539.7,291.1 543.4,292.6 547.1,292.6 550.8,294.5 554.5,294.5 558.2,295.9 561.9,295.9 565.6,296.9 569.3,296.9 572.9,300.3 576.6,299.3 580.3,302.7 584.0,301.7 587.7,303.2 591.4,303.2
+595.1,303.2 598.8,303.2 602.5,304.1 606.2,303.6 609.9,304.1 613.5,303.6 617.2,303.2 620.9,303.6 624.6,302.2 628.3,302.2 632.0,301.7 635.7,301.2 639.4,302.7 643.1,302.7 646.8,303.6 650.5,303.2
+654.2,304.6 657.8,304.6 661.5,307.0 665.2,306.5 668.9,310.4 672.6,310.4 676.3,312.8 680.0,312.8 683.7,313.3 687.4,313.8 691.1,315.2 694.8,314.7 698.4,316.2 702.1,315.7 705.8,314.7 709.5,315.2
+713.2,314.7 716.9,314.7 720.6,313.8 724.3,314.2 728.0,313.8 731.7,313.8 735.4,313.3 739.0,313.3 742.7,313.8 746.4,314.2 750.1,314.2 753.8,314.2 757.5,313.3 761.2,313.3 764.9,313.3 768.6,312.3
+772.3,312.8 776.0,312.3 779.6,312.3 783.3,312.3 787.0,312.3 790.7,312.3 794.4,312.3 798.1,312.3 801.8,312.8 805.5,313.3 809.2,314.2 812.9,314.2 816.6,314.2 820.2,314.2 823.9,315.2 827.6,314.2
+831.3,315.2 835.0,314.2 838.7,315.7 842.4,314.7 846.1,314.7 849.8,314.2 853.5,314.2 857.2,313.8 860.9,319.1 864.5,319.1 868.2,325.3 871.9,325.3 875.6,331.6 879.3,331.6 883.0,337.4 886.7,337.8
+890.4,344.1 894.1,344.1 897.8,350.8 901.5,350.8 905.1,357.6 908.8,357.6 912.5,364.8 916.2,363.9 919.9,371.1 923.6,370.6 927.3,377.3 931.0,376.4 934.7,382.6 938.4,382.6 942.1,388.9 945.7,388.9
+949.4,363.9 953.1,364.3 956.8,359.0 960.5,358.6 964.2,353.7 967.9,352.8 971.6,348.4 975.3,348.4 979.0,343.1 982.7,343.6 986.3,337.8 990.0,338.3 993.7,333.5 997.4,402.4 997.4,454.4 63.6,454.4
+'/>
+	</g>
+</g>
+	</g>
+	<g id="Throughput_plot_2" ><title>Traffic ingress (mean 4.25 Mbits/s)</title>
+<g fill="none" color="white" stroke="rgb(148,   0, 211)" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter">
+	<g id="Throughput_plot_2_keyentry" visibility="visible" onclick="gnuplot_svg.toggleVisibility(evt,'Throughput_plot_2')">
+	<g transform="translate(472.5,39.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >Traffic ingress (mean 4.25 Mbits/s)</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(  0,  32, 160)'  d='M480.8,36.0 L523.0,36.0  '/>	</g>
+	<path stroke='rgb(  0,  32, 160)'  d='M63.6,296.6 L67.3,241.1 L71.0,199.1 L74.7,206.4 L78.3,152.9 L82.0,281.0 L85.7,59.5 L89.4,306.5
+		L93.1,185.6 L96.8,202.5 L100.5,306.1 L104.2,329.2 L107.9,380.7 L111.6,369.6 L115.3,334.5 L118.9,364.8
+		L122.6,332.1 L126.3,368.2 L130.0,360.0 L133.7,267.0 L137.4,341.2 L141.1,360.0 L144.8,344.6 L148.5,274.7
+		L152.2,356.1 L155.9,346.0 L159.5,355.2 L163.2,317.6 L166.9,353.7 L170.6,282.5 L174.3,344.6 L178.0,342.2
+		L181.7,338.8 L185.4,337.8 L189.1,271.4 L192.8,348.0 L196.5,295.0 L200.1,295.0 L203.8,351.8 L207.5,316.7
+		L211.2,364.3 L214.9,253.6 L218.6,366.3 L222.3,265.6 L226.0,361.4 L229.7,303.6 L233.4,350.8 L237.1,349.9
+		L240.7,310.4 L244.4,302.2 L248.1,349.9 L251.8,280.0 L255.5,355.7 L259.2,354.2 L262.9,290.2 L266.6,345.1
+		L270.3,326.8 L274.0,294.5 L277.7,389.4 L281.4,204.4 L285.0,366.7 L288.7,328.2 L292.4,295.0 L296.1,335.4
+		L299.8,260.3 L303.5,383.1 L307.2,208.8 L310.9,356.1 L314.6,284.9 L318.3,345.5 L322.0,315.2 L325.6,303.6
+		L329.3,357.1 L333.0,269.9 L336.7,317.1 L340.4,391.3 L344.1,397.6 L347.8,393.7 L351.5,393.7 L355.2,396.6
+		L358.9,398.5 L362.6,400.5 L366.2,397.6 L369.9,399.5 L373.6,398.5 L377.3,393.7 L381.0,397.6 L384.7,395.6
+		L388.4,393.7 L392.1,398.5 L395.8,393.2 L399.5,396.1 L403.2,396.6 L406.8,395.6 L410.5,394.7 L414.2,393.7
+		L417.9,396.6 L421.6,396.6 L425.3,397.6 L429.0,398.5 L432.7,392.7 L436.4,398.5 L440.1,394.7 L443.8,395.6
+		L447.4,397.6 L451.1,396.6 L454.8,393.7 L458.5,396.6 L462.2,397.6 L465.9,393.7 L469.6,396.6 L473.3,399.5
+		L477.0,393.7 L480.7,394.2 L484.4,398.0 L488.1,396.6 L491.7,399.5 L495.4,396.6 L499.1,396.6 L502.8,399.5
+		L506.5,397.6 L510.2,407.2 L513.9,397.6 L517.6,396.6 L521.3,396.6 L525.0,399.0 L528.7,396.1 L532.3,396.6
+		L536.0,400.5 L539.7,392.7 L543.4,398.5 L547.1,396.6 L550.8,397.6 L554.5,400.5 L558.2,399.5 L561.9,394.7
+		L565.6,394.7 L569.3,396.6 L572.9,394.7 L576.6,394.7 L580.3,394.7 L584.0,395.6 L587.7,397.5 L591.4,395.6
+		L595.1,396.6 L598.8,397.6 L602.5,393.7 L606.2,397.6 L609.9,397.6 L613.5,396.6 L617.2,397.6 L620.9,394.7
+		L624.6,395.6 L628.3,398.5 L632.0,402.4 L635.7,393.7 L639.4,394.7 L643.1,398.5 L646.8,393.7 L650.5,396.6
+		L654.2,399.5 L657.8,396.6 L661.5,398.5 L665.2,399.5 L668.9,393.7 L672.6,396.6 L676.3,402.4 L680.0,397.6
+		L683.7,394.7 L687.4,400.5 L691.1,396.6 L694.8,397.6 L698.4,402.4 L702.1,399.5 L705.8,395.6 L709.5,395.6
+		L713.2,399.0 L716.9,395.2 L720.6,400.5 L724.3,396.6 L728.0,401.4 L731.7,397.6 L735.4,394.7 L739.0,398.5
+		L742.7,395.6 L746.4,396.6 L750.1,397.6 L753.8,397.6 L757.5,397.6 L761.2,397.6 L764.9,398.5 L768.6,399.5
+		L772.3,397.6 L776.0,397.6 L779.6,393.7 L783.3,396.1 L787.0,400.9 L790.7,394.7 L794.4,394.7 L798.1,395.6
+		L801.8,395.6 L805.5,395.6 L809.2,399.5 L812.9,399.5 L816.6,394.7 L820.2,405.3 L823.9,396.6 L827.6,395.6
+		L831.3,397.6 L835.0,402.4 L838.7,401.4 L842.4,400.5 L846.1,395.6 L849.8,397.6 L853.5,394.7 L857.2,395.6
+		L860.9,398.5 L864.5,394.7 L868.2,396.6 L871.9,398.5 L875.6,399.5 L879.3,401.4 L883.0,399.5 L886.7,394.7
+		L890.4,400.5 L894.1,397.6 L897.8,401.4 L901.5,399.5 L905.1,400.5 L908.8,399.5 L912.5,403.3 L916.2,402.4
+		L919.9,397.6 L923.6,401.9 L927.3,400.0 L931.0,405.3 L934.7,401.4 L938.4,400.5 L942.1,402.4 L945.7,401.4
+		L949.4,399.5 L953.1,400.5 L956.8,346.5 L960.5,358.1 L964.2,352.8 L967.9,351.8 L971.6,347.0 L975.3,355.2
+		L979.0,337.8 L982.7,342.2 L986.3,336.9 L990.0,347.0 L993.7,327.7 L997.4,414.4  '/></g>
+	</g>
+	<g id="Throughput_plot_3" ><title>Traffic egress (mean 3.79 Mbits/s)</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter">
+	<g id="Throughput_plot_3_keyentry" visibility="visible" onclick="gnuplot_svg.toggleVisibility(evt,'Throughput_plot_3')">
+	<g transform="translate(821.8,21.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >Traffic egress (mean 3.79 Mbits/s)</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.25" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(255,  96,  64)'  d='M830.1,18.0 L872.3,18.0  '/>	</g>
+	<path stroke='rgb(255,  96,  64)'  d='M63.6,378.9 L67.3,364.3 L71.0,358.9 L74.7,358.6 L78.3,353.7 L82.0,352.8 L85.7,348.4 L89.4,348.4
+		L93.1,343.1 L96.8,343.6 L100.5,337.8 L104.2,338.3 L107.9,383.1 L111.6,362.4 L115.3,335.0 L118.9,371.1
+		L122.6,346.0 L126.3,377.3 L130.0,353.7 L133.7,326.3 L137.4,332.1 L141.1,366.3 L144.8,342.7 L148.5,315.2
+		L152.2,358.1 L155.9,341.7 L159.5,354.7 L163.2,339.3 L166.9,343.6 L170.6,325.3 L174.3,339.8 L178.0,343.1
+		L181.7,338.8 L185.4,357.6 L189.1,305.6 L192.8,352.8 L196.5,317.6 L200.1,334.0 L203.8,340.3 L207.5,344.6
+		L211.2,354.7 L214.9,316.2 L218.6,353.7 L222.3,311.8 L226.0,348.9 L229.7,321.0 L233.4,375.4 L237.1,344.1
+		L240.7,323.9 L244.4,328.7 L248.1,350.8 L251.8,313.8 L255.5,355.7 L259.2,354.2 L262.9,304.1 L266.6,360.5
+		L270.3,330.1 L274.0,321.0 L277.7,376.9 L281.4,300.8 L285.0,355.7 L288.7,334.5 L292.4,332.5 L296.1,330.6
+		L299.8,316.2 L303.5,370.1 L307.2,287.3 L310.9,348.4 L314.6,303.2 L318.3,361.4 L322.0,321.5 L325.6,314.7
+		L329.3,366.3 L333.0,305.6 L336.7,323.4 L340.4,385.5 L344.1,397.6 L347.8,393.2 L351.5,393.7 L355.2,396.6
+		L358.9,398.5 L362.6,400.5 L366.2,397.6 L369.9,399.5 L373.6,398.5 L377.3,393.7 L381.0,397.6 L384.7,395.6
+		L388.4,393.7 L392.1,398.5 L395.8,393.2 L399.5,396.1 L403.2,396.6 L406.8,395.6 L410.5,394.7 L414.2,393.7
+		L417.9,397.6 L421.6,395.6 L425.3,397.6 L429.0,398.5 L432.7,393.2 L436.4,398.5 L440.1,394.2 L443.8,395.6
+		L447.4,397.6 L451.1,397.1 L454.8,393.2 L458.5,397.6 L462.2,396.6 L465.9,393.7 L469.6,396.6 L473.3,399.5
+		L477.0,393.7 L480.7,394.2 L484.4,398.0 L488.1,397.6 L491.7,398.5 L495.4,397.6 L499.1,395.6 L502.8,399.5
+		L506.5,397.6 L510.2,407.2 L513.9,397.6 L517.6,396.6 L521.3,396.6 L525.0,399.5 L528.7,395.6 L532.3,396.6
+		L536.0,400.5 L539.7,393.2 L543.4,398.0 L547.1,396.6 L550.8,397.6 L554.5,400.5 L558.2,399.5 L561.9,394.7
+		L565.6,394.7 L569.3,396.6 L572.9,394.7 L576.6,395.2 L580.3,394.2 L584.0,395.6 L587.7,397.5 L591.4,395.6
+		L595.1,396.6 L598.8,397.6 L602.5,394.7 L606.2,396.6 L609.9,397.6 L613.5,396.6 L617.2,397.6 L620.9,394.7
+		L624.6,395.6 L628.3,398.5 L632.0,402.4 L635.7,393.7 L639.4,395.2 L643.1,398.0 L646.8,393.7 L650.5,397.6
+		L654.2,398.5 L657.8,397.1 L661.5,398.0 L665.2,399.5 L668.9,394.7 L672.6,395.6 L676.3,402.4 L680.0,398.0
+		L683.7,394.2 L687.4,400.5 L691.1,396.6 L694.8,397.6 L698.4,402.4 L702.1,399.5 L705.8,395.6 L709.5,395.6
+		L713.2,399.0 L716.9,395.6 L720.6,400.0 L724.3,397.1 L728.0,400.9 L731.7,397.6 L735.4,394.7 L739.0,398.5
+		L742.7,395.6 L746.4,397.1 L750.1,397.1 L753.8,397.6 L757.5,397.6 L761.2,397.6 L764.9,398.5 L768.6,400.5
+		L772.3,396.6 L776.0,397.6 L779.6,394.7 L783.3,395.6 L787.0,400.5 L790.7,395.2 L794.4,395.2 L798.1,394.7
+		L801.8,395.6 L805.5,395.6 L809.2,399.5 L812.9,399.5 L816.6,394.7 L820.2,405.8 L823.9,397.1 L827.6,395.6
+		L831.3,397.1 L835.0,402.4 L838.7,401.4 L842.4,400.0 L846.1,395.6 L849.8,397.6 L853.5,395.6 L857.2,395.2
+		L860.9,398.0 L864.5,394.7 L868.2,397.1 L871.9,398.5 L875.6,399.0 L879.3,401.9 L883.0,399.0 L886.7,395.2
+		L890.4,400.9 L894.1,397.6 L897.8,400.5 L901.5,400.5 L905.1,399.5 L908.8,400.0 L912.5,402.9 L916.2,402.4
+		L919.9,398.5 L923.6,400.9 L927.3,400.9 L931.0,404.3 L934.7,401.9 L938.4,400.9 L942.1,401.4 L945.7,402.4
+		L949.4,398.5 L953.1,400.9 L956.8,367.2 L960.5,358.6 L964.2,353.7 L967.9,352.8 L971.6,348.4 L975.3,348.4
+		L979.0,343.1 L982.7,343.6 L986.3,337.8 L990.0,338.3 L993.7,333.5 L997.4,403.8  '/></g>
+	</g>
+<g fill="none" color="white" stroke="rgb(255,  96,  64)" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="black" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M63.6,54.1 L63.6,454.4 L999.0,454.4 L999.0,54.1 L63.6,54.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+
+<script type="text/javascript"><![CDATA[
+// plot boundaries and axis scaling information for mousing 
+gnuplot_svg.plot_term_xmax = 1024;
+gnuplot_svg.plot_term_ymax = 512;
+gnuplot_svg.plot_xmin = 63.6;
+gnuplot_svg.plot_xmax = 999.0;
+gnuplot_svg.plot_ybot = 454.4;
+gnuplot_svg.plot_ytop = 54.1;
+gnuplot_svg.plot_width = 935.4;
+gnuplot_svg.plot_height = 400.3;
+gnuplot_svg.plot_axis_xmin = 0.003;
+gnuplot_svg.plot_axis_xmax = 126.714;
+gnuplot_svg.plot_axis_ymin = 0;
+gnuplot_svg.plot_axis_ymax = 20;
+gnuplot_svg.polar_mode = false;
+gnuplot_svg.plot_axis_x2min = "none"
+gnuplot_svg.plot_axis_y2min = "none"
+gnuplot_svg.plot_logaxis_x = 0;
+gnuplot_svg.plot_logaxis_y = 0;
+gnuplot_svg.plot_timeaxis_x = "";
+gnuplot_svg.plot_timeaxis_y = "";
+]]>
+</script>
+</g>
+
+  <text id="coord_text" text-anchor="start" pointer-events="none"
+  font-size="12" font-family="Arial"
+  visibility="hidden"> </text>
+
+  <rect id="hypertextbox" class="hypertextbox" pointer-events="none"
+  fill="white" stroke="black" opacity="0.8"
+  height="16" visibility="hidden" />
+
+  <text id="hypertext" class="hypertext" pointer-events="none"
+  font-size="12" font-family="Arial"
+  visibility="hidden"> </text>
+
+  <image id="hyperimage" class="hyperimage" pointer-events="none"
+  fill="white" stroke="black" opacity="0.8"
+  height="200" width="300" visibility="hidden" />
+
+  <image x='10' y='486' width='16' height='16' xlink:href='grid.png'
+    onclick='gnuplot_svg.toggleGrid();'/>
+</svg>
+

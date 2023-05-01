@@ -29,7 +29,7 @@ fi
 if [ $# -eq 2 ];
 then
     rm -r ./state_action ./rl_logging 
-    rm {curr_dir}logs/* ./${curr_dir}/plots/*
+    rm ${curr_dir}logs/* ./${curr_dir}/plots/*
     rm ${curr_dir}remote_output_logs/*
     rm -r ${curr_dir}log/*
     rm nohup.out
